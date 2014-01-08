@@ -1,10 +1,9 @@
-from distutils.core import setup
-import treepace.__version__
+from setuptools import setup
 
 setup(name='Treepace',
-      version=treepace.__version__,
+      version='1.0.preview',
       description='Tree Transformation Language',
-      author='Matúš Sulír',
+      author='MatÃºÅ¡ SulÃ­r',
       url='https://github.com/sulir/treepace',
       packages=['treepace']
      )
