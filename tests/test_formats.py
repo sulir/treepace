@@ -23,21 +23,21 @@ class TestFormats(unittest.TestCase):
                          Node('item3')])
     
     def test_load_indented(self):
-        self.assertEquals(load_indented(self.INDENTED), self.TREE)
+        self.assertEqual(load_indented(self.INDENTED), self.TREE)
         with self.assertRaises(MultipleRootsError):
             load_indented('root1\nroot2')
     
     def test_save_indented(self):
-        self.assertEquals(save_indented(self.TREE), self.INDENTED)
+        self.assertEqual(save_indented(self.TREE), self.INDENTED)
     
     def test_load_par(self):
-        self.assertEquals(load_par(self.PARENTHESIZED), self.TREE)
+        self.assertEqual(load_par(self.PARENTHESIZED), self.TREE)
     
     def test_save_par(self):
-        self.assertEquals(save_par(self.TREE), self.PARENTHESIZED)
+        self.assertEqual(save_par(self.TREE), self.PARENTHESIZED)
     
     def test_load_xml(self):
-        self.assertEquals(load_xml(self.XML), self.TREE)
+        self.assertEqual(load_xml(self.XML), self.TREE)
     
     def test_save_xml(self):
-        self.assertEquals(save_xml(self.TREE), self.XML)
+        self.assertEqual(save_xml(self.TREE), self.XML)
