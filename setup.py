@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
+"""Package setup script; requires setuptools (or Python >=3.4 which
+bundles it)."""
+
 from setuptools import setup
 
 setup(name='Treepace',
