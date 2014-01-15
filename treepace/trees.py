@@ -8,9 +8,12 @@ class Node:
     """
     
     def __init__(self, value, children=[]):
-        """Construct a new tree node."""
+        """Construct a new tree node.
+        
+        The optional child node list will be shallow-copied.
+        """
         self._value = value
-        self._children = children
+        self._children = list(children)
     
     @property
     def value(self):
@@ -29,7 +32,7 @@ class Node:
         return tuple(self._children)
     
     def add_child(self, child):
-        """Add a child to the end."""
+        """Add a child node to the end."""
         self._children.append(child)
     
     def delete_child(self, index):
