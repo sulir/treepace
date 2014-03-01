@@ -12,7 +12,7 @@ from xml.dom import minidom
 from xml.etree import ElementTree
 from treepace.trees import Node
 
-def load_indented(string):
+def load_indented(string, cls=Node):
     """Create a tree from the tab- or space-indented string."""
     indent_len = None
     stack = []
@@ -27,7 +27,7 @@ def load_indented(string):
         if level == 0 and stack:
             raise InvalidFormatError("Multiple root nodes")
         if level <= len(stack):
-            stack[level:] = [Node(value)]
+            stack[level:] = [cls(value)]
         else:
             raise InvalidFormatError("Level too large")
         if level > 0:
@@ -37,17 +37,17 @@ def load_indented(string):
 def save_indented(tree, indent='    '):
     """Create a space- or tab-indented string from the tree."""
     def indented(node, level):
-        result = level * indent + node.value + '\n'
+        result = level * indent + str(node.value) + '\n'
         for child in node.children:
             result += indented(child, level + 1)
         return result
     
     return indented(tree, 0)
 
-def load_par(string):
+def load_par(string, cls=Node):
     """Create a tree from the parenthesized string."""
     tokens = re.findall(r'\(|\)|[^\(\)\s]+', string)
-    root = Node(tokens.pop(0))
+    root = cls(tokens.pop(0))
     
     def parse(node):
         while tokens:
@@ -59,7 +59,7 @@ def load_par(string):
             elif token == ')':
                 return
             else:
-                node.add_child(Node(token))
+                node.add_child(cls(token))
     
     if tokens and tokens.pop(0) != '(':
         raise InvalidFormatError("Multiple root nodes")
@@ -68,7 +68,7 @@ def load_par(string):
 
 def save_par(tree):
     """Create a parenthesized string from the tree."""
-    result = tree.value
+    result = str(tree.value)
     if tree.children:
         for i, child in enumerate(tree.children):
             result += (' (' if i == 0 else ' ') + save_par(child)
@@ -76,16 +76,18 @@ def save_par(tree):
     
     return result
 
-def load_xml(string):
+def load_xml(string, cls=Node):
     """Create a tree from the XML string."""
     doc = ElementTree.fromstring(string)
-    node = Node(doc.tag)
+    node = cls(doc.tag)
     
     def load(doc, node):
-        for child in doc:
-            new_node = Node(child.tag)
+        for elem in doc:
+            new_node = cls(elem.tag)
             node.add_child(new_node)
-            load(child, new_node)
+            for attribute, value in elem.attrib:
+                node.add_child({attribute: value})
+            load(elem, new_node)
     
     load(doc, node)
     return node
