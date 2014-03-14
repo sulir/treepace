@@ -1,120 +1,65 @@
-"""Tree interfaces and implementations."""
+from treepace.formats import ParenText
+from treepace.nodes import Node
 
-import sys
-
-class Node:
-    """A general in-memory tree node with references to children and a parent.
+class Tree:
+    """A general tree which can contain any types of nodes."""
     
-    There is no distinction between a whole tree and a node - the tree is just
-    represented by a root node.
-    """
+    def __init__(self, root):
+        """Initialize the tree with a root node which can never be deleted
+        (only replaced)."""
+        self._root = root
     
-    def __init__(self, value, children=[]):
-        """Initialize a new tree node.
+    @property
+    def root(self):
+        """Return the root node."""
+        return self._root
+    
+    @root.setter
+    def root(self, _root):
+        """Set a new root node-"""
+        self._root = _root
+    
+    @classmethod
+    def load(cls, string, fmt, node_class=Node):
+        """Create a new tree by importing it from a string in a given format."""
+        input_format = fmt() if callable(fmt) else fmt
+        return cls(input_format.load_tree(string, node_class))
+    
+    def save(self, fmt):
+        """Export the tree to a string in a given format."""
+        return (fmt() if callable(fmt) else fmt).save_tree(self.root)
+    
+    def search(self, pattern, start=None):
+        """Search the whole tree for a given subtree."""
+        pass
+    
+    def match(self, pattern):
+        """Return True if the pattern captures the whole tree from the root
+        to the leaves."""
+        pass
+    
+    def replace(self, pattern, replacement):
+        """Replace each found subtree with a new subtree.
         
-        The optional child node list will be shallow-copied.
+        The replacement can be a tree object, a string containing
+        back-references or a callback function returning the new tree.
         """
-        self._value = value
-        self._parent = None
-        self._children = []
-        for child in children:
-            self.add_child(child)
+        if callable(replacement):
+            pass
+        else:
+            pass
     
-    @property
-    def value(self):
-        """Return this node's value."""
-        return self._value
-    
-    @value.setter
-    def value(self, _value):
-        """Set the value of this node -- a string, a map or any other object."""
-        self._value = _value
-    
-    @property
-    def parent(self):
-        """Return the parent node."""
-        return self._parent
-    
-    @property
-    def children(self):
-        """Return a tuple containing the child nodes."""
-        return tuple(self._children)
-    
-    def add_child(self, child):
-        """Add a child node to the end."""
-        child._parent = self
-        self._children.append(child)
-    
-    def insert_child(self, child, index):
-        """Insert a child node at the specified index."""
-        child._parent = self
-        self._children.insert(index, child)
-    
-    def delete_child(self, index):
-        """Delete the child node at the specified index."""
-        self._children[index]._parent = None
-        del self._children[index]
-    
-    def index(self):
-        """Return a zero-based order of this node among its siblings."""
-        siblings = self.parent.children if self.parent else [self]
-        return next(i for i, sibling in enumerate(siblings) if sibling is self)
-    
-    def level(self):
-        """Return this node's vertical level; the root node has a level of 0."""
-        return len(self.path()) - 1
-    
-    def path(self):
-        """Return a list of nodes from the root to this node."""
-        result = []
-        node = self
-        while node:
-            result.insert(0, str(node.value))
-            node = node.parent
-        return result
-    
-    def str_path(self):
-        """Return a slash-separated path from the root node to this node."""
-        return "/".join(self.path())
-    
-    def __repr__(self):
-        """Return a string representation of this node and all children
-        (recursively)."""
-        return str(self.value) + str(self._children)
+    def transform(self, program):
+        """Execute the transformation program which can contain multiple rules
+        in the form: pattern -> replacement."""
+        pass
     
     def __eq__(self, other):
-        """The node values themselves and then the children values are
-        compared (recursively)."""
-        return self._value == other._value and self._children == other._children
-
-
-class LogNode(Node):
-    """A tree node which writes human-readable information about all changes
-    to a file (or standard output)."""
+        """Compare the whole tree with an another tree."""
+        self_subtrees = [Tree(c) for c in self.root.children]
+        other_subtrees = [Tree(c) for c in other.root.children]
+        return self.root == other.root and self_subtrees == other_subtrees
     
-    def __init__(self, value, children=[], file=sys.stdout):
-        self._file = file
-        super().__init__(value, children)
-    
-    @Node.value.setter
-    def value(self, _value):
-        old_path = self.str_path()
-        Node.value.fset(self, _value)
-        self._log("Change value of '%s' to '%s'", old_path, str(_value))
-    
-    def add_child(self, child):
-        super().add_child(child)
-        self._log("Add child '%s' to '%s'", str(child.value), self.str_path())
-    
-    def insert_child(self, child, index):
-        super().insert_child(child, index)
-        info = str(child.value), index, self.str_path()
-        self._log("Insert child '%s' at index %d of '%s'", *info)
-    
-    def delete_child(self, index):
-        path = self.children[index].str_path()
-        super().delete_child(index)
-        self._log("Delete node '%s'", path)
-    
-    def _log(self, text, *args):
-        print(text % args, file=self._file)
+    def __repr__(self):
+        """Return a parenthesized-text representation of this tree."""
+        return self.save(ParenText)

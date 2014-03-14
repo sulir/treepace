@@ -1,6 +1,9 @@
-import unittest
-from treepace.formats import *
 from textwrap import dedent
+import unittest
+from treepace.formats import (IndentedText, ParenText, XmlText,
+    InvalidFormatError)
+from treepace.nodes import Node
+from treepace.trees import Tree
 
 class TestFormats(unittest.TestCase):
     INDENTED = '''\
@@ -21,32 +24,33 @@ class TestFormats(unittest.TestCase):
                 <item2/>
                 <item3/>
             </root>'''
-    TREE = Node('root', [Node('item1', [Node('sub', [Node('subsub')])]),
-                         Node('item2'),
-                         Node('item3')])
+    TREE = Tree(Node('root', [Node('item1', [Node('sub', [Node('subsub')])]),
+                              Node('item2'),
+                              Node('item3')]))
     
     def test_load_indented(self):
-        self.assertEqual(load_indented(self.INDENTED), self.TREE)
+        self.assertEqual(Tree.load(self.INDENTED, IndentedText), self.TREE)
         with self.assertRaises(InvalidFormatError):
-            load_indented('root1\nroot2')
+            Tree.load('root1\nroot2', IndentedText)
     
     def test_save_indented(self):
-        result = save_indented(self.TREE).splitlines()
+        result = self.TREE.save(IndentedText).splitlines()
         expected = dedent(self.INDENTED).splitlines()
         self.assertEqual(result, expected)
     
     def test_load_par(self):
-        self.assertEqual(load_par(self.PARENTHESIZED), self.TREE)
-        self.assertRaises(InvalidFormatError, lambda: load_par('a(('))
-        self.assertRaises(InvalidFormatError, lambda: load_par('a b'))
+        fmt = ParenText
+        self.assertEqual(Tree.load(self.PARENTHESIZED, fmt), self.TREE)
+        self.assertRaises(InvalidFormatError, lambda: Tree.load('a((', fmt))
+        self.assertRaises(InvalidFormatError, lambda: Tree.load('a b', fmt))
     
     def test_save_par(self):
-        self.assertEqual(save_par(self.TREE), self.PARENTHESIZED)
+        self.assertEqual(self.TREE.save(ParenText), self.PARENTHESIZED)
     
     def test_load_xml(self):
-        self.assertEqual(load_xml(self.XML), self.TREE)
+        self.assertEqual(Tree.load(self.XML, XmlText), self.TREE)
     
     def test_save_xml(self):
-        result = save_xml(self.TREE).splitlines()
+        result = self.TREE.save(XmlText).splitlines()
         expected = dedent(self.XML).splitlines()
         self.assertEqual(result, expected)
