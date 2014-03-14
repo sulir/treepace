@@ -31,7 +31,14 @@ class Tree:
     
     def search(self, pattern, start=None):
         """Search the whole tree for a given subtree."""
-        pass
+        def traverse(node, result):
+            if node.match(pattern):
+                result.append(node)
+            for child in node.children:
+                traverse(child, result)
+            return result
+        
+        return traverse(start or self.root, [])
     
     def match(self, pattern):
         """Return True if the pattern captures the whole tree from the root

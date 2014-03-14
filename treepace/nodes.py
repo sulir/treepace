@@ -1,6 +1,7 @@
 """The basic node implementation, followed by custom node types with specific
 behavior."""
 
+import re
 import sys
 
 class Node:
@@ -75,6 +76,16 @@ class Node:
     def str_path(self):
         """Return a slash-separated path from the root node to this node."""
         return "/".join(self.path())
+    
+    def match(self, pattern):
+        """Return True if this node matches the pattern (a string literal
+        or a Python predicate)."""
+        code = re.search(r'\[(.*)\]', pattern)
+        if code:
+            _ = self.value
+            return eval(code.group(1))
+        else:
+            return str(self.value) == pattern
     
     def __repr__(self):
         """Return a string representation of this node."""
