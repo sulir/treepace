@@ -12,4 +12,5 @@ setup(name='Treepace',
       url='https://github.com/sulir/treepace',
       packages=['treepace'],
       test_suite='tests',
+      install_requires='parsimonious==0.5',
      )
