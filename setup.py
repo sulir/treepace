@@ -13,4 +13,15 @@ setup(name='Treepace',
       packages=['treepace'],
       test_suite='tests',
       install_requires='parsimonious==0.5',
+      classifiers=[
+          'Development Status :: 2 - Pre-Alpha',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.2',
+          'Programming Language :: Python :: 3.3',
+          'Programming Language :: Python :: 3.4',
+          'Topic :: Software Development :: Libraries',
+          ]
      )
