@@ -35,7 +35,7 @@ class Node:
     
     @property
     def children(self):
-        """Return a (shallow-copied) tuple containing the child nodes."""
+        """Return a shallow-copied tuple containing the child nodes."""
         return tuple(self._children)
     
     def add_child(self, child):
@@ -57,7 +57,7 @@ class Node:
     def index(self):
         """Return a zero-based order of this node among its siblings."""
         siblings = self.parent.children if self.parent else [self]
-        return next(i for i, sibling in enumerate(siblings) if sibling is self)
+        return next(i for i, sibling in enumerate(siblings) if sibling == self)
     
     @property
     def level(self):
@@ -90,10 +90,6 @@ class Node:
     def __repr__(self):
         """Return a string representation of this node."""
         return str(self.value)
-    
-    def __eq__(self, other):
-        """The node values are compared."""
-        return self._value == other._value
 
 
 class LogNode(Node):

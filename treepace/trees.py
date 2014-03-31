@@ -20,7 +20,7 @@ class Tree:
         self._root = _root
     
     @classmethod
-    def load(cls, string, fmt, node_class=Node):
+    def load(cls, string, fmt=ParenText, node_class=Node):
         """Create a new tree by importing it from a string in a given format."""
         input_format = fmt() if callable(fmt) else fmt
         return cls(input_format.load_tree(string, node_class))
@@ -61,12 +61,13 @@ class Tree:
         in the form: pattern -> replacement."""
         pass
     
+    def __repr__(self):
+        """Return a parenthesized-text representation of this tree."""
+        return self.save(ParenText)
+    
     def __eq__(self, other):
         """Compare the whole tree with an another tree."""
         self_subtrees = [Tree(c) for c in self.root.children]
         other_subtrees = [Tree(c) for c in other.root.children]
-        return self.root == other.root and self_subtrees == other_subtrees
-    
-    def __repr__(self):
-        """Return a parenthesized-text representation of this tree."""
-        return self.save(ParenText)
+        return (self.root.value == other.root.value
+                and self_subtrees == other_subtrees)
