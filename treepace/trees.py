@@ -1,8 +1,11 @@
+"""Tree and subtree implementation."""
+
 from itertools import chain
 from treepace.formats import ParenText
+from treepace.mixins import EqualityMixin
 from treepace.nodes import Node
 
-class Tree:
+class Tree(EqualityMixin):
     """A general tree which can contain any types of nodes."""
     
     def __init__(self, root):
@@ -87,7 +90,7 @@ class Tree:
                 and self_subtrees == other_subtrees)
 
 
-class Subtree:
+class Subtree(EqualityMixin):
     """A connected part of a tree with one root node and one or more leaves.
     
     The main tree should not be changed while its subtree is in use.
@@ -141,7 +144,3 @@ class Subtree:
     def __repr__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
-    
-    def __eq__(self, other):
-        """Two subtrees are equal if they contain the same set of nodes."""
-        return self._nodes == other._nodes
