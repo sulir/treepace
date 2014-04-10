@@ -97,10 +97,10 @@ class Subtree(EqualityMixin):
     """
     
     def __init__(self, nodes):
-        """Initialize the subtree with a nonempty list of nodes."""
-        self._root = nodes[0]
-        self._nodes = {self._root}
-        for node in nodes[1:]:
+        """Initialize the subtree with a (possibly empty) list of nodes."""
+        self._root = None
+        self._nodes = set()
+        for node in nodes:
             self.add_node(node)
     
     def add_node(self, node):
@@ -108,7 +108,7 @@ class Subtree(EqualityMixin):
         
         It must be connected to some node currently present in the subtree.
         """
-        if node == self._root.parent:
+        if self._root is None or node == self._root.parent:
             self._root = node
         elif node.parent not in self._nodes:
             raise ValueError("Disconnected subtree node")
