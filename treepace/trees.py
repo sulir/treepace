@@ -4,6 +4,8 @@ from itertools import chain
 from treepace.formats import ParenText
 from treepace.mixins import EqualityMixin
 from treepace.nodes import Node
+from treepace.machine import Machine
+from treepace.compiler import Compiler
 
 class Tree(EqualityMixin):
     """A general tree which can contain any types of nodes."""
@@ -46,16 +48,11 @@ class Tree(EqualityMixin):
         compare = lambda node: str(node.value) == str(value)
         return next(filter(compare, self.preorder()), None)
     
-    def search(self, pattern, start=None):
+    def search(self, pattern):
         """Search the whole tree for a given subtree."""
-        def traverse(node, result):
-            if node.match(pattern):
-                result.append(node)
-            for child in node.children:
-                traverse(child, result)
-            return result
-        
-        return traverse(start or self.root, [])
+        machine = Machine(self.root, Compiler().compile_pattern(pattern))
+        machine.run()
+        return machine.found
     
     def match(self, pattern):
         """Return True if the pattern captures the whole tree from the root
@@ -96,7 +93,7 @@ class Subtree(EqualityMixin):
     The main tree should not be changed while its subtree is in use.
     """
     
-    def __init__(self, nodes):
+    def __init__(self, nodes=set()):
         """Initialize the subtree with a (possibly empty) list of nodes."""
         self._root = None
         self._nodes = set()
@@ -139,7 +136,7 @@ class Subtree(EqualityMixin):
                 tree_node.add_child(make_tree(child))
             return tree_node
         
-        return Tree(make_tree(self._root))
+        return Tree(make_tree(self._root)) if self._root else None
     
     def __repr__(self):
         """Return a text representation of the subtree (as if it was a tree)."""

@@ -1,11 +1,12 @@
-"""A parser of transformation rule strings."""
+"""A parser and instruction generator for transformation rule strings."""
 
 import re
 from parsimonious.grammar import Grammar
 from parsimonious.nodes import NodeVisitor
-from treepace.machine import Find, GroupEnd, GroupStart, Reference, Relation
+from treepace.machine import Find, GroupEnd, GroupStart, Reference, SetRelation
+from treepace.relations import Child, NextSibling, Parent, Sibling
 
-GRAMMAR = '''
+GRAMMAR = Grammar('''
     rule          = pattern '->' replacement
     _             = ~r'[ \t]*'
     
@@ -26,9 +27,12 @@ GRAMMAR = '''
     parent        = _'>'_
     
     replacement   = repl_node (repl_relation repl_node)*
-    repl_node     = constant / code / reference
+    repl_node     = repl_constant / repl_code / repl_ref
+    repl_constant = constant
+    repl_code     = code
+    repl_ref      = reference
     repl_relation = child / next_sibling / parent
-'''
+''')
 
 class InstructionGenerator(NodeVisitor):
     """A post-order visitor which generates a list of virtual machine
@@ -43,8 +47,8 @@ class InstructionGenerator(NodeVisitor):
         self._add(Find('True'))
     
     def visit_constant(self, node, visited_children):
-        text = re.search('"?(.*)"?', node.text.strip()).group(1)
-        self._add(Find('str(_) == str(%s)' % repr(text)))
+        text = self._text_constant(node)
+        self._add(Find('str(_.value) == str(%s)' % repr(text)))
     
     def visit_code(self, node, visited_children):
         self._add(Find(node.text.strip()[1:-1]))
@@ -62,35 +66,39 @@ class InstructionGenerator(NodeVisitor):
         self._end_num -= 1
     
     def visit_child(self, node, visited_children):
-        self._add(Relation(Relation.CHILD))
+        self._add(SetRelation(Child))
     
     def visit_sibling(self, node, visited_children):
-        self._add(Relation(Relation.SIBLING))
+        self._add(SetRelation(Sibling))
     
     def visit_next_sibling(self, node, visited_children):
-        self._add(Relation(Relation.NEXT_SIB))
+        self._add(SetRelation(NextSibling))
     
     def visit_parent(self, node, visited_children):
-        self._add(Relation(Relation.PARENT))
+        self._add(SetRelation(Parent))
     
     def generic_visit(self, node, visited_children):
         pass
     
     def _add(self, instruction):
         self.instructions.append(instruction)
-
-
-class Parser:
-    """A parser of rule, pattern and replacement strings."""
     
-    def __init__(self):
-        """Initialize the parser by compiling the grammar to be used by
-        a parser generator."""
-        self._grammar = Grammar(GRAMMAR)
+    def _text_constant(self, node):
+        return re.search('"?(.*)"?', node.text.strip()).group(1)
+
+class Compiler:
+    """A compiler from rule, pattern and replacement strings to instructions."""
     
-    def parse_pattern(self, pattern):
+    def compile_pattern(self, pattern):
         """Parse the pattern and return an instruction list."""
-        ast = self._grammar['pattern'].parse(pattern)
+        return self._compile('pattern', pattern)
+    
+    def compile_rule(self, rule):
+        """Parse the pattern and return an instruction list."""
+        return self._compile('rule', rule)
+    
+    def _compile(self, rule_name, string):
+        ast = GRAMMAR[rule_name].parse(string)
         generator = InstructionGenerator()
         generator.visit(ast)
         return generator.instructions
