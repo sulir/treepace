@@ -10,8 +10,8 @@ class Machine:
     def __init__(self, node, instructions):
         """Initialize the VM with the default state."""
         self._groups = {0}
-        self._subtrees = [treepace.trees.Subtree()]
-        self._node = node
+        match = treepace.trees.Match([treepace.trees.Subtree()])
+        self._branches = [SearchBranch(match, node)]
         self._relation = Descendant
         self._instructions = instructions
         
@@ -21,18 +21,33 @@ class Machine:
     
     def run(self):
         """Execute all instructions."""
-        while self._instructions:
+        while self._instructions and self._branches:
             instruction = self._instructions.pop(0)
             instruction.execute()
     
     @property
     def found(self):
         """Return the search results."""
-        return self._subtrees
+        return list(map(lambda branch: branch.match, self._branches))
+
+
+class SearchBranch:
+    """The search process can 'divide' itself into multiple branches."""
+    
+    def __init__(self, match, context_node):
+        """"Each branch is represented by a match object (a subtree list
+        containing current results) and a context node."""
+        self.match = match
+        self.context_node = context_node
+    
+    def __repr__(self):
+        """Return the debugging representation."""
+        return str(self.__dict__)
 
 
 class Instruction(EqualityMixin):
     """A base class for all instructions."""
+    
     pass
 
 
@@ -40,17 +55,22 @@ class Find(Instruction):
     """An instruction searching for nodes which are in the currently set
     relationship with the context node and match the predicate."""
     
-    def __init__(self, predicate):
-        self.predicate = compile(predicate, '<string>', 'eval')
+    def __init__(self, expression):
+        self.code = compile(expression, '<string>', 'eval')
     
     def execute(self):
-        for node in self.vm._relation().search(self.vm._node):
-            _ = node
-            if eval(self.predicate):
+        new_branches = []
+        for old_branch in self.vm._branches:
+            for node in self._matching_nodes(old_branch.context_node):
+                new_branch = SearchBranch(old_branch.match.copy(), node)
                 for group in self.vm._groups:
-                    self.vm._subtrees[group].add_node(node)
-                self.vm._node = node
-                break
+                    new_branch.match.group(group).add_node(node)
+                new_branches.append(new_branch)
+        self.vm._branches = new_branches
+    
+    def _matching_nodes(self, context_node):
+        predicate = lambda x: eval(self.code, {'node': x, '_': x.value})
+        return filter(predicate, self.vm._relation().search(context_node))
 
 
 class SetRelation(Instruction):
@@ -71,11 +91,12 @@ class GroupStart(Instruction):
     
     def execute(self):
         self.vm._groups.add(self.number)
-        self.vm._subtrees.append(treepace.trees.Subtree())
+        for branch in self.vm._branches:
+            branch.match.groups().append(treepace.trees.Subtree())
 
 
 class GroupEnd(Instruction):
-    """An instruction marking a numbered group start."""
+    """An instruction marking a numbered group end."""
     
     def __init__(self, number):
         self.number = number

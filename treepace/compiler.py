@@ -48,7 +48,7 @@ class InstructionGenerator(NodeVisitor):
     
     def visit_constant(self, node, visited_children):
         text = self._text_constant(node)
-        self._add(Find('str(_.value) == str(%s)' % repr(text)))
+        self._add(Find('str(_) == str(%s)' % repr(text)))
     
     def visit_code(self, node, visited_children):
         self._add(Find(node.text.strip()[1:-1]))

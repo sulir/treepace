@@ -138,6 +138,36 @@ class Subtree(EqualityMixin):
         
         return Tree(make_tree(self._root)) if self._root else None
     
+    def copy(self):
+        """Return a shallow copy of the subtree (a new node set is created,
+        but the node references point to the same nodes)."""
+        return Subtree(self._nodes)
+    
     def __repr__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
+
+
+class Match:
+    """A match is a list of groups; each group is one subtree."""
+    
+    def __init__(self, groups):
+        """Initialize a match with a list of subtrees."""
+        self._subtrees = groups
+    
+    def group(self, number=0):
+        """Return the given group; group 0 is the whole match."""
+        return self._subtrees[number]
+    
+    def groups(self):
+        """Return the list of all groups."""
+        return self._subtrees
+    
+    def copy(self):
+        """Return a list of copies of all subtrees."""
+        return Match(list(map(lambda x: x.copy(), self._subtrees)))
+    
+    def __repr__(self):
+        """Return a debugging representation of the match."""
+        return 'Match: %s' % self._subtrees
+    

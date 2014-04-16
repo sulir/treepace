@@ -24,6 +24,8 @@ class NextSibling:
         next_index = node.index + 1
         if node.parent and len(node.parent.children) > next_index:
             return [node.parent.children[next_index]]
+        else:
+            return []
     
     def build(self, context, node):
         context.parent.insert_child(node, context.index + 1)
