@@ -2,12 +2,12 @@
 
 from itertools import chain
 from treepace.formats import ParenText
-from treepace.mixins import EqualityMixin
+from treepace.mixins import EqualityMixin, ReprMixin
 from treepace.nodes import Node
 from treepace.machine import Machine
 from treepace.compiler import Compiler
 
-class Tree(EqualityMixin):
+class Tree(EqualityMixin, ReprMixin):
     """A general tree which can contain any types of nodes."""
     
     def __init__(self, root):
@@ -75,7 +75,7 @@ class Tree(EqualityMixin):
         in the form: pattern -> replacement."""
         pass
     
-    def __repr__(self):
+    def __str__(self):
         """Return a parenthesized-text representation of this tree."""
         return self.save(ParenText)
     
@@ -87,13 +87,13 @@ class Tree(EqualityMixin):
                 and self_subtrees == other_subtrees)
 
 
-class Subtree(EqualityMixin):
+class Subtree(EqualityMixin, ReprMixin):
     """A connected part of a tree with one root node and one or more leaves.
     
     The main tree should not be changed while its subtree is in use.
     """
     
-    def __init__(self, nodes=set()):
+    def __init__(self, nodes=[]):
         """Initialize the subtree with a (possibly empty) list of nodes."""
         self._root = None
         self._nodes = set()
@@ -143,12 +143,12 @@ class Subtree(EqualityMixin):
         but the node references point to the same nodes)."""
         return Subtree(self._nodes)
     
-    def __repr__(self):
+    def __str__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
 
 
-class Match:
+class Match(ReprMixin):
     """A match is a list of groups; each group is one subtree."""
     
     def __init__(self, groups):
@@ -167,7 +167,6 @@ class Match:
         """Return a list of copies of all subtrees."""
         return Match(list(map(lambda x: x.copy(), self._subtrees)))
     
-    def __repr__(self):
-        """Return a debugging representation of the match."""
-        return 'Match: %s' % self._subtrees
-    
+    def __str__(self):
+        """Return a string containing all groups (subtrees)."""
+        return str(list(map(str, self._subtrees)))

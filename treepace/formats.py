@@ -44,7 +44,7 @@ class IndentedText:
     def save_tree(self, tree):
         """Create a space- or tab-indented string from the tree."""
         def indented(node, level):
-            result = level * self.indent + str(node.value) + '\n'
+            result = level * self.indent + str(node) + '\n'
             for child in node.children:
                 result += indented(child, level + 1)
             return result
@@ -80,7 +80,7 @@ class ParenText:
     
     def save_tree(self, tree):
         """Create a parenthesized string from the tree."""
-        result = str(tree.value)
+        result = str(tree)
         if tree.children:
             for i, child in enumerate(tree.children):
                 result += (' (' if i == 0 else ' ') + self.save_tree(child)
@@ -110,11 +110,11 @@ class XmlText:
     
     def save_tree(self, tree):
         """Create an XML string from the tree."""
-        doc = ElementTree.Element(tree.value)
+        doc = ElementTree.Element(str(tree))
         
         def save(node, doc):
             for child in node.children:
-                sub = ElementTree.SubElement(doc, child.value)
+                sub = ElementTree.SubElement(doc, str(child))
                 save(child, sub)
         
         save(tree, doc)

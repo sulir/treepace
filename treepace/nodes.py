@@ -3,8 +3,9 @@ behavior."""
 
 import re
 import sys
+from treepace.mixins import ReprMixin
 
-class Node:
+class Node(ReprMixin):
     """An in-memory node node with references to children and a parent."""
     
     def __init__(self, value, children=[]):
@@ -87,8 +88,8 @@ class Node:
         else:
             return str(self.value) == pattern
     
-    def __repr__(self):
-        """Return a string representation of this node."""
+    def __str__(self):
+        """Return a string representation of the node's value."""
         return str(self.value)
 
 
