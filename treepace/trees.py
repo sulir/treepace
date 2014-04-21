@@ -97,6 +97,7 @@ class Subtree(EqualityMixin, ReprMixin):
         """Initialize the subtree with a (possibly empty) list of nodes."""
         self._root = None
         self._nodes = set()
+        self._node_list = []
         for node in nodes:
             self.add_node(node)
     
@@ -110,6 +111,7 @@ class Subtree(EqualityMixin, ReprMixin):
         elif node.parent not in self._nodes:
             raise ValueError("Disconnected subtree node")
         self._nodes.add(node)
+        self._node_list.append(node)
     
     @property
     def root(self):
@@ -141,7 +143,7 @@ class Subtree(EqualityMixin, ReprMixin):
     def copy(self):
         """Return a shallow copy of the subtree (a new node set is created,
         but the node references point to the same nodes)."""
-        return Subtree(self._nodes)
+        return Subtree(self._node_list)
     
     def __str__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
