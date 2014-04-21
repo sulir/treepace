@@ -14,10 +14,11 @@ class Find(Instruction):
     """An instruction searching for nodes which are in the currently set
     relationship with the context node and match the predicate."""
     
-    def __init__(self, expression):
+    def __init__(self, expression, **variables):
         """Save the expression in a textual and compiled version."""
         self.expression = expression
         self.code = compile(expression, '<string>', 'eval')
+        self.variables = variables
     
     def execute(self):
         """Find the nodes and create/delete the branches as appropriate."""
@@ -31,7 +32,10 @@ class Find(Instruction):
         self.vm._branches = new_branches
     
     def _matching_nodes(self, context_node):
-        predicate = lambda x: eval(self.code, {'node': x, '_': x.value})
+        def predicate(node):
+            self.variables.update({'node': node, '_': node.value})
+            return eval(self.code, self.vm._variables, self.variables)
+        
         return filter(predicate, self.vm._relation().search(context_node))
     
     def __str__(self):

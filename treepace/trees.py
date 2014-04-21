@@ -48,9 +48,10 @@ class Tree(EqualityMixin, ReprMixin):
         compare = lambda node: str(node.value) == str(value)
         return next(filter(compare, self.preorder()), None)
     
-    def search(self, pattern):
+    def search(self, pattern, **variables):
         """Search the whole tree for a given subtree."""
-        machine = Machine(self.root, Compiler().compile_pattern(pattern))
+        instructions = Compiler().compile_pattern(pattern)
+        machine = Machine(self.root, instructions, variables)
         machine.run()
         return machine.found
     
@@ -59,7 +60,7 @@ class Tree(EqualityMixin, ReprMixin):
         to the leaves."""
         pass
     
-    def replace(self, pattern, replacement):
+    def replace(self, pattern, replacement, **variables):
         """Replace each found subtree with a new subtree.
         
         The replacement can be a tree object, a string containing
@@ -70,7 +71,7 @@ class Tree(EqualityMixin, ReprMixin):
         else:
             pass
     
-    def transform(self, program):
+    def transform(self, program, **variables):
         """Execute the transformation program which can contain multiple rules
         in the form: pattern -> replacement."""
         pass

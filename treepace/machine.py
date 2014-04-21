@@ -7,7 +7,7 @@ import treepace.trees
 class Machine(ReprMixin):
     """A tree-searching and replacing virtual machine."""
     
-    def __init__(self, node, instructions):
+    def __init__(self, node, instructions, variables):
         """Initialize the VM with the default state."""
         self._groups = {0}
         match = treepace.trees.Match([treepace.trees.Subtree()])
@@ -17,7 +17,7 @@ class Machine(ReprMixin):
         
         for instruction in instructions:
             instruction.vm = self
-        self.replacement = None
+        self._variables = variables
     
     def run(self):
         """Execute all instructions."""
