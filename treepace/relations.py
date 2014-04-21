@@ -8,6 +8,7 @@ class Child:
     name = "child"
     
     def search(self, node):
+        """Return an iterable containing this node's children."""
         return node.children
 
 
@@ -17,8 +18,11 @@ class Sibling:
     name = "sibling"
     
     def search(self, node):
+        """Return an iterable containing the siblings of this children."""
         if node.parent:
             return filter(lambda x: x != node, node.parent.children)
+        else:
+            return []
 
 
 class NextSibling:
@@ -27,6 +31,8 @@ class NextSibling:
     name = "next_sib"
     
     def search(self, node):
+        """Return a list with one element (the next sibling) or an empty
+        list."""
         next_index = node.index + 1
         if node.parent and len(node.parent.children) > next_index:
             return [node.parent.children[next_index]]
@@ -34,6 +40,7 @@ class NextSibling:
             return []
     
     def build(self, context, node):
+        """Insert the given node after the context node."""
         context.parent.insert_child(node, context.index + 1)
 
 
@@ -43,10 +50,8 @@ class Parent:
     name = "parent"
     
     def search(self, node):
+        """Return a one-element list with the node's parent or an empty list."""
         return [node.parent] if node.parent else []
-    
-    def build(self, context, node):
-        context.add_child(node)
 
 
 class Descendant:
@@ -55,4 +60,6 @@ class Descendant:
     name = "desc"
     
     def search(self, node):
+        """Return an iterable with all node's descendants in a pre-order
+        manner."""
         return treepace.trees.Tree(node).preorder()

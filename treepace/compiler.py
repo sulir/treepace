@@ -40,45 +40,57 @@ class InstructionGenerator(NodeVisitor):
     instructions from an AST."""
     
     def __init__(self):
+        """Initialize the instruction list and group counters."""
         self.instructions = []
         self._start_num = 0
         self._end_num = 0
     
     def visit_any(self, node, visited_children):
+        """Add an instruction which matches any node."""
         self._add(Find('True'))
     
     def visit_constant(self, node, visited_children):
+        """Add an instruction which matches the constant."""
         text = self._text_constant(node)
         self._add(Find('str(_) == str(%s)' % repr(text)))
     
     def visit_code(self, node, visited_children):
+        """Add an instruction which matches the predicate."""
         self._add(Find(node.text.strip()[1:-1]))
     
     def visit_reference(self, node, visited_children):
+        """Add a back-referencing instruction."""
         self._add(Reference(int(node.text.replace('$', ''))))
     
     def visit_group_start(self, node, visited_children):
+        """Add a group-starting instruction and adjust the counters."""
         self._start_num += 1
         self._end_num = self._start_num
         self._add(GroupStart(self._start_num))
     
     def visit_group_end(self, node, visited_children):
+        """Add a group-ending instruction and adjust the counter."""
         self._add(GroupEnd(self._end_num))
         self._end_num -= 1
     
     def visit_child(self, node, visited_children):
+        """Add the instruction 'REL child'."""
         self._add(SetRelation(Child))
     
     def visit_sibling(self, node, visited_children):
+        """Add the instruction 'REL sibling'."""
         self._add(SetRelation(Sibling))
     
     def visit_next_sibling(self, node, visited_children):
+        """Add the instruction 'REL next_sib'."""
         self._add(SetRelation(NextSibling))
     
     def visit_parent(self, node, visited_children):
+        """Add the instruction 'REL parent'."""
         self._add(SetRelation(Parent))
     
     def generic_visit(self, node, visited_children):
+        """Just continue with the traversal."""
         pass
     
     def _add(self, instruction):
@@ -95,7 +107,7 @@ class Compiler:
         return self._compile('pattern', pattern)
     
     def compile_rule(self, rule):
-        """Parse the pattern and return an instruction list."""
+        """Parse the rule and return an instruction list."""
         return self._compile('rule', rule)
     
     def _compile(self, rule_name, string):

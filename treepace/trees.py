@@ -22,7 +22,7 @@ class Tree(EqualityMixin, ReprMixin):
     
     @root.setter
     def root(self, _root):
-        """Set a new root node-"""
+        """Set a new root node."""
         self._root = _root
     
     @classmethod

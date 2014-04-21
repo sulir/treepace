@@ -41,7 +41,7 @@ class SearchBranch(ReprMixin):
     """The search process can 'divide' itself into multiple branches."""
     
     def __init__(self, match, context_node):
-        """"Each branch is represented by a match object (a subtree list
+        """Each branch is represented by a match object (a subtree list
         containing current results) and a context node."""
         self.match = match
         self.context_node = context_node
