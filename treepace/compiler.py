@@ -11,8 +11,9 @@ GRAMMAR = Grammar('''
     rule          = pattern '->' replacement
     _             = ~r'[ \t]*'
     
-    pattern       = group (relation group)*
+    pattern       = group (rel_group)*
     group         = node / (group_start pattern group_end)
+    rel_group     = (relation group) / parent_any
     node          = any / constant / code / reference
     any           = _'.'_
     constant      = (_~r'[-\w]*\w'_) / (_'"' ~r'[^"]+' '"'_)
@@ -26,6 +27,7 @@ GRAMMAR = Grammar('''
     sibling       = _'&'_
     next_sibling  = _','_
     parent        = _'>'_
+    parent_any    = _'>'_
     
     replacement   = repl_node (repl_relation repl_node)*
     repl_node     = repl_constant / repl_code / repl_ref
@@ -88,6 +90,11 @@ class InstructionGenerator(NodeVisitor):
     def visit_parent(self, node, visited_children):
         """Add the instruction 'REL parent'."""
         self._add(SetRelation(Parent))
+    
+    def visit_parent_any(self, node, visited_children):
+        """The 'parent' relation followed by an implicit 'any' pattern."""
+        self._add(SetRelation(Parent))
+        self._add(Find('True'))
     
     def generic_visit(self, node, visited_children):
         """Just continue with the traversal."""
