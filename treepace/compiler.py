@@ -44,8 +44,8 @@ class InstructionGenerator(NodeVisitor):
     def __init__(self):
         """Initialize the instruction list and group counters."""
         self.instructions = []
-        self._start_num = 0
-        self._end_num = 0
+        self._started_group = 0
+        self._ended_groups = set()
     
     def visit_any(self, node, visited_children):
         """Add an instruction which matches any node."""
@@ -62,18 +62,21 @@ class InstructionGenerator(NodeVisitor):
     
     def visit_reference(self, node, visited_children):
         """Add a back-referencing instruction."""
-        self._add(Reference(int(node.text.replace('$', ''))))
+        group_num = int(node.text.replace('$', ''))
+        if group_num not in self._ended_groups:
+            raise CompileError('Group %d cannot be referenced yet' % group_num)
+        self._add(Reference(group_num))
     
     def visit_group_start(self, node, visited_children):
         """Add a group-starting instruction and adjust the counters."""
-        self._start_num += 1
-        self._end_num = self._start_num
-        self._add(GroupStart(self._start_num))
+        self._started_group += 1
+        self._add(GroupStart(self._started_group))
     
     def visit_group_end(self, node, visited_children):
         """Add a group-ending instruction and adjust the counter."""
-        self._add(GroupEnd(self._end_num))
-        self._end_num -= 1
+        end = max(set(range(1, self._started_group + 1)) - self._ended_groups)
+        self._ended_groups.add(end)
+        self._add(GroupEnd(end))
     
     def visit_child(self, node, visited_children):
         """Add the instruction 'REL child'."""
@@ -122,3 +125,8 @@ class Compiler:
         generator = InstructionGenerator()
         generator.visit(ast)
         return generator.instructions
+
+
+class CompileError(Exception):
+    """Raised when a non-parser related error occurs during compilation."""
+    pass
