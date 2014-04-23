@@ -3,10 +3,11 @@ from treepace.trees import Tree, Subtree
 
 class TestTree(unittest.TestCase):
     def test_search(self):
-        tree = Tree.load('a (b (c) b (c) d e)')
-        matches = tree.search('a < b <c> & d, e')
-        for result in [match.group().to_tree() for match in matches]:
-            self.assertEqual(result, Tree.load('a (b (c) d e)'))
+        source = Tree.load('a (b (c) b (c) d a)')
+        expected = Tree.load('a (b (c) d a)')
+        for match in source.search('{a} < b <c> & d, $1'):
+            self.assertEqual(match.group().to_tree(), expected)
+            self.assertEqual(match.group(1).to_tree(), Tree.load('a'))
 
 class TestSubtree(unittest.TestCase):
     def test_add_node(self):

@@ -9,10 +9,7 @@ class SearchMachine(ReprMixin):
     
     def __init__(self, node, instructions, variables):
         """Initialize the VM with the default state."""
-        for instruction in instructions:
-            instruction.vm = self
-        
-        self.branches = [SearchBranch(node, instructions)]
+        self.branches = [SearchBranch(node, instructions, self)]
         self.machine_vars = variables
     
     def search(self):
@@ -40,7 +37,7 @@ class SearchMachine(ReprMixin):
 class SearchBranch(ReprMixin):
     """The search process can 'divide' itself into multiple branches."""
     
-    def __init__(self, node, instructions):
+    def __init__(self, node, instructions, vm):
         """Each branch is represented by a set of current group numbers,
         a match object (a subtree list containing current results), a context
         node, a current relation and an instruction list."""
@@ -49,11 +46,12 @@ class SearchBranch(ReprMixin):
         self.node = node
         self.relation = Descendant
         self.instructions = instructions
+        self.vm = vm
     
     def copy(self):
         """Return a copy of this branch which can be modified without affecting
         the original branch."""
-        branch = SearchBranch(self.node, self.instructions.copy())
+        branch = SearchBranch(self.node, self.instructions.copy(), self.vm)
         branch.groups = self.groups.copy()
         branch.match = self.match.copy()
         branch.relation = self.relation
@@ -86,7 +84,8 @@ class Find(Instruction):
         """Find the nodes and return a list of branches which should replace
         the supplied branch."""
         new_branches = []
-        for node in self._matching_nodes(branch.node, branch.relation):
+        vm_vars = branch.vm.machine_vars.copy()
+        for node in self._matching_nodes(branch.node, branch.relation, vm_vars):
             new_branch = branch.copy()
             for group in new_branch.groups:
                 new_branch.match.group(group).add_node(node)
@@ -94,14 +93,12 @@ class Find(Instruction):
             new_branches.append(new_branch)
         return new_branches
     
-    def _matching_nodes(self, context_node, relation):
-        variables = self.vm.machine_vars.copy()
-        variables.update(self.instr_vars)
-        
+    def _matching_nodes(self, context_node, relation, variables):
         def predicate(node):
             variables.update({'node': node, '_': node.value})
             return eval(self.code, variables)
         
+        variables.update(self.instr_vars)
         return filter(predicate, relation().search(context_node))
     
     def __str__(self):
@@ -166,8 +163,10 @@ class Reference(Instruction):
         self.number = number
     
     def execute(self, branch):
-        """"""
-        pass
+        """Prepend instructions which will search for a subtree same as
+        the given group's subtree."""
+        generated = branch.match.group(self.number).generate_reference()
+        branch.instructions[:0] = generated
     
     def __str__(self):
         """Return the string representation of the instruction."""
