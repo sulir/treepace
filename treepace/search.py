@@ -67,7 +67,7 @@ class SearchBranch(ReprMixin):
 
 
 class Instruction(EqualityMixin, ReprMixin):
-    """A base class for all instructions."""
+    """Instructions should be immutable."""
     
     pass
 

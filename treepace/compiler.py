@@ -1,5 +1,6 @@
 """A parser and instruction generator for transformation rule strings."""
 
+from functools import lru_cache
 import re
 from parsimonious.grammar import Grammar
 from parsimonious.nodes import NodeVisitor
@@ -113,13 +114,15 @@ class Compiler:
     
     def compile_pattern(self, pattern):
         """Parse the pattern and return an instruction list."""
-        return self._compile('pattern', pattern)
+        return self._compile('pattern', pattern).copy()
     
     def compile_rule(self, rule):
         """Parse the rule and return an instruction list."""
-        return self._compile('rule', rule)
+        return self._compile('rule', rule).copy()
     
-    def _compile(self, rule_name, string):
+    @staticmethod
+    @lru_cache()
+    def _compile(rule_name, string):
         ast = GRAMMAR[rule_name].parse(string)
         generator = InstructionGenerator()
         generator.visit(ast)
