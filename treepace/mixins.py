@@ -16,16 +16,14 @@ class EqualityMixin:
 
 
 class ReprMixin:
-    """An automatic derivation of __repr__ from __str__."""
-    
-    def __repr__(self):
-        """The debug representation is derived from the string representation
-        by adding a class name and a unique identifier."""
-        identifier = hex(id(self))[2:]
-        return "<%s '%s' @%s>" % (self.__class__.__name__, self, identifier)
+    """Default string and debugging representations of objects."""
     
     def __str__(self):
-        """Subclasses should supply their own implementations, this is only
-        a fail-safe option to avoid infinite recursion caused by the default
-        behavior."""
-        return ""
+        """Ideally, subclasses should supply their own implementations."""
+        return str(self.__dict__)
+    
+    def __repr__(self):
+        """The debug representation is automatically derived from the string
+        representation by adding a class name and a unique identifier."""
+        identifier = hex(id(self))[2:]
+        return "<%s '%s' @%s>" % (self.__class__.__name__, self, identifier)

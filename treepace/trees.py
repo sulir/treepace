@@ -4,7 +4,7 @@ from itertools import chain
 from treepace.formats import ParenText
 from treepace.mixins import EqualityMixin, ReprMixin
 from treepace.nodes import Node
-from treepace.machine import Machine
+from treepace.search import SearchMachine
 from treepace.compiler import Compiler
 
 class Tree(EqualityMixin, ReprMixin):
@@ -51,9 +51,7 @@ class Tree(EqualityMixin, ReprMixin):
     def search(self, pattern, **variables):
         """Search the whole tree for a given subtree."""
         instructions = Compiler().compile_pattern(pattern)
-        machine = Machine(self.root, instructions, variables)
-        machine.run()
-        return machine.found
+        return SearchMachine(self.root, instructions, variables).search()
     
     def match(self, pattern):
         """Return True if the pattern captures the whole tree from the root
@@ -130,6 +128,9 @@ class Subtree(EqualityMixin, ReprMixin):
     def connected_leaves(self):
         """Return leaves of the subtree which have children in the main tree."""
         return [leaf for leaf in self.leaves() if leaf.children]
+    
+    def generate_instructions(self, node_instr):
+        pass
     
     def to_tree(self):
         """Shallow-copy nodes of the subtree into a new tree."""

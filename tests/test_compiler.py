@@ -1,7 +1,6 @@
 import unittest
 from treepace.compiler import Compiler
-from treepace.instructions import (Find, GroupEnd, GroupStart, Reference,
-                                   SetRelation)
+from treepace.search import Find, GroupEnd, GroupStart, Reference, SetRelation
 from treepace.relations import Child, NextSibling
 
 class TestCompiler(unittest.TestCase):

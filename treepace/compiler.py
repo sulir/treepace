@@ -3,8 +3,7 @@
 import re
 from parsimonious.grammar import Grammar
 from parsimonious.nodes import NodeVisitor
-from treepace.instructions import (Find, GroupEnd, GroupStart, Reference,
-                                   SetRelation)
+from treepace.search import Find, GroupEnd, GroupStart, Reference, SetRelation
 from treepace.relations import Child, NextSibling, Parent, Sibling
 
 GRAMMAR = Grammar('''

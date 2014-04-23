@@ -1,6 +1,13 @@
 import unittest
 from treepace.trees import Tree, Subtree
 
+class TestTree(unittest.TestCase):
+    def test_search(self):
+        tree = Tree.load('a (b (c) b (c) d e)')
+        matches = tree.search('a < b <c> & d, e')
+        for result in [match.group().to_tree() for match in matches]:
+            self.assertEqual(result, Tree.load('a (b (c) d e)'))
+
 class TestSubtree(unittest.TestCase):
     def test_add_node(self):
         tree = Tree.load('1 (2 (3 (4 (5)) 6))')
