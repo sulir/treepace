@@ -114,11 +114,11 @@ class Compiler:
     
     def compile_pattern(self, pattern):
         """Parse the pattern and return an instruction list."""
-        return self._compile('pattern', pattern).copy()
+        return self._compile('pattern', pattern)[:]
     
     def compile_rule(self, rule):
         """Parse the rule and return an instruction list."""
-        return self._compile('rule', rule).copy()
+        return self._compile('rule', rule)[:]
     
     @staticmethod
     @lru_cache()

@@ -51,7 +51,7 @@ class SearchBranch(ReprMixin):
     def copy(self):
         """Return a copy of this branch which can be modified without affecting
         the original branch."""
-        branch = SearchBranch(self.node, self.instructions.copy(), self.vm)
+        branch = SearchBranch(self.node, self.instructions[:], self.vm)
         branch.groups = self.groups.copy()
         branch.match = self.match.copy()
         branch.relation = self.relation
