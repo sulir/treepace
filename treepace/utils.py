@@ -1,4 +1,4 @@
-"""Utility mixins -- additional functionalities for classes."""
+"""Utility functions and mix-in classes."""
 
 class EqualityMixin:
     """Equality and inequality operator overloading based on attributes."""

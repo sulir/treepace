@@ -1,8 +1,8 @@
 """A tree-searching virtual machine and its instructions."""
 
-from treepace.mixins import EqualityMixin, ReprMixin
-from treepace.relations import Descendant
-import treepace.trees
+from treepace.relations import Child, Descendant, NextSibling, Parent
+import treepace.subtree
+from treepace.utils import EqualityMixin, ReprMixin
 
 class SearchMachine(ReprMixin):
     """A tree-searching virtual machine."""
@@ -42,7 +42,7 @@ class SearchBranch(ReprMixin):
         a match object (a subtree list containing current results), a context
         node, a current relation and an instruction list."""
         self.groups = {0}
-        self.match = treepace.trees.Match([treepace.trees.Subtree()])
+        self.match = treepace.subtree.Match([treepace.subtree.Subtree()])
         self.node = node
         self.relation = Descendant
         self.instructions = instructions
@@ -132,7 +132,7 @@ class GroupStart(Instruction):
     def execute(self, branch):
         """Add the corresponding group number and subtrees to the machine."""
         branch.groups.add(self.number)
-        branch.match.groups().append(treepace.trees.Subtree())
+        branch.match.groups().append(treepace.subtree.Subtree())
     
     def __str__(self):
         """Return the string representation of the instruction."""
@@ -165,7 +165,12 @@ class Reference(Instruction):
     def execute(self, branch):
         """Prepend instructions which will search for a subtree same as
         the given group's subtree."""
-        generated = branch.match.group(self.number).generate_reference()
+        generated = branch.match.group(self.number).to_tree().traverse(
+            node  = lambda node: [Find('_ == ref', ref=node.value)],
+            down  = lambda: [SetRelation(Child)],
+            right = lambda: [SetRelation(NextSibling)],
+            up    = lambda: [SetRelation(Parent), Find('True')]
+        )
         branch.instructions[:0] = generated
     
     def __str__(self):

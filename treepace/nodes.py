@@ -3,7 +3,7 @@ behavior."""
 
 import re
 import sys
-from treepace.mixins import ReprMixin
+from treepace.utils import ReprMixin
 
 class Node(ReprMixin):
     """An in-memory node node with references to children and a parent."""

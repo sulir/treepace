@@ -1,5 +1,6 @@
 import unittest
-from treepace.trees import Tree, Subtree
+from treepace.subtree import Subtree
+from treepace.tree import Tree
 
 class TestTree(unittest.TestCase):
     def test_search(self):

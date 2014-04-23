@@ -1,6 +1,6 @@
 """Tree node relations."""
 
-import treepace.trees
+import treepace.tree
 
 class Child:
     """A child relation."""
@@ -62,4 +62,4 @@ class Descendant:
     def search(self, node):
         """Return an iterable with all node's descendants in a pre-order
         manner."""
-        return treepace.trees.Tree(node).preorder()
+        return treepace.tree.Tree(node).preorder()
