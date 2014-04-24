@@ -46,7 +46,7 @@ class Tree(EqualityMixin, ReprMixin):
     
     def search(self, pattern, **variables):
         """Search the whole tree for a given subtree."""
-        instructions = Compiler().compile_pattern(pattern)
+        instructions = Compiler.compile_pattern(pattern)
         return SearchMachine(self.root, instructions, variables).search()
     
     def match(self, pattern):
@@ -57,11 +57,14 @@ class Tree(EqualityMixin, ReprMixin):
     def replace(self, pattern, replacement, **variables):
         """Replace each found subtree with a new subtree.
         
-        The replacement can be a tree object, a string containing
-        back-references or a callback function returning the new tree.
+        The replacement can be a string containing back-references or
+        a callback function returning the new tree.
         """
+        matches = self.search(pattern, **variables)
+        
         if callable(replacement):
-            pass
+            for match in matches:
+                tree = replacement(match)
         else:
             pass
     
@@ -70,8 +73,8 @@ class Tree(EqualityMixin, ReprMixin):
         in the form: pattern -> replacement."""
         pass
     
-    def traverse(self, node=lambda node: (), down=lambda: (), right=lambda: (),
-                 up=lambda: ()):
+    def traverse(self, node=lambda node: [], down=lambda: [], right=lambda: [],
+                 up=lambda: []):
         """Traverse the tree in a pre-order manner with direction signaling.
         
         For each visited node or direction, execute the supplied function and

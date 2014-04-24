@@ -22,30 +22,76 @@ GRAMMAR = Grammar('''
     reference     = _~r'\$[0-9]+'_
     group_start   = _'{'_
     group_end     = _'}'_
-    relation      = child / sibling / next_sibling / parent
+    relation      = child / sibling / next_sibling
     child         = _'<'_
     sibling       = _'&'_
     next_sibling  = _','_
-    parent        = _'>'_
     parent_any    = _'>'_
     
-    replacement   = repl_node (repl_relation repl_node)*
-    repl_node     = repl_constant / repl_code / repl_ref
-    repl_constant = constant
-    repl_code     = code
-    repl_ref      = reference
-    repl_relation = child / next_sibling / parent
+    replacement   = repl_node (repl_rel_node)*
+    repl_node     = constant / code / reference
+    repl_rel_node = (repl_relation node) / parent_any
+    repl_relation = child / next_sibling
 ''')
 
+class Compiler:
+    """A compiler from rule, pattern and replacement strings to instructions."""
+    
+    @staticmethod
+    @lru_cache()
+    def compile_pattern(pattern):
+        """Parse the pattern and return an instruction list."""
+        return SearchGenerator().visit(GRAMMAR['pattern'].parse(pattern))
+    
+    @staticmethod
+    @lru_cache()
+    def compile_replacement(replacement):
+        """Parse the replacement and return an instruction list."""
+        ast = GRAMMAR['replacement'].parse(replacement)
+        return ReplaceGenerator().visit(ast)
+    
+    @staticmethod
+    @lru_cache()
+    def compile_rule(rule):
+        """Parse the rule and return two instruction lists -- searching
+        instructions and replacing instructions."""
+        ast = GRAMMAR['rule'].parse(rule)
+        search_instructions = SearchGenerator().visit(ast.children[0])
+        replace_instructions = ReplaceGenerator().visit(ast.children[1])
+        return (search_instructions, replace_instructions)
+
+
 class InstructionGenerator(NodeVisitor):
-    """A post-order visitor which generates a list of virtual machine
-    instructions from an AST."""
+    """A base class for post-order visitors which generate a list of virtual
+    machine instructions from an AST."""
     
     def __init__(self):
-        """Initialize the instruction list and group counters."""
-        self.instructions = []
+        """Initialize the instruction list."""
+        self._instructions = []
+    
+    def generic_visit(self, node, visited_children):
+        """Just continue with the traversal."""
+        pass
+    
+    def _add(self, instruction):
+        self._instructions.append(instruction)
+    
+    def _text_constant(self, node):
+        return re.search('"?(.*)"?', node.text.strip()).group(1)
+
+
+class SearchGenerator(InstructionGenerator):
+    """A generator of tree-searching instructions."""
+    
+    def __init__(self):
+        """Initialize the group counters."""
+        super().__init__()
         self._started_group = 0
         self._ended_groups = set()
+    
+    def visit_pattern(self, node, visited_children):
+        """Return the generated instruction list (at the top of the AST)."""
+        return self._instructions
     
     def visit_any(self, node, visited_children):
         """Add an instruction which matches any node."""
@@ -90,43 +136,42 @@ class InstructionGenerator(NodeVisitor):
         """Add the instruction 'REL next_sib'."""
         self._add(SetRelation(NextSibling))
     
-    def visit_parent(self, node, visited_children):
-        """Add the instruction 'REL parent'."""
-        self._add(SetRelation(Parent))
-    
     def visit_parent_any(self, node, visited_children):
         """The 'parent' relation followed by an implicit 'any' pattern."""
         self._add(SetRelation(Parent))
         self._add(Find('True'))
+
+
+class ReplaceGenerator(InstructionGenerator):
+    """A generator of instructions which build a replacement tree."""
     
-    def generic_visit(self, node, visited_children):
-        """Just continue with the traversal."""
+    def visit_replacement(self, node, visited_children):
+        """Return the generated instruction list (at the top of the AST)."""
+        return self._instructions
+    
+    def visit_constant(self, node, visited_children):
+        """"""
         pass
     
-    def _add(self, instruction):
-        self.instructions.append(instruction)
+    def visit_code(self, node, visited_children):
+        """"""
+        pass
     
-    def _text_constant(self, node):
-        return re.search('"?(.*)"?', node.text.strip()).group(1)
-
-class Compiler:
-    """A compiler from rule, pattern and replacement strings to instructions."""
+    def visit_reference(self, node, visited_children):
+        """"""
+        pass
     
-    def compile_pattern(self, pattern):
-        """Parse the pattern and return an instruction list."""
-        return self._compile('pattern', pattern)[:]
+    def visit_child(self, node, visited_children):
+        """"""
+        pass
     
-    def compile_rule(self, rule):
-        """Parse the rule and return an instruction list."""
-        return self._compile('rule', rule)[:]
+    def visit_next_sibling(self, node, visited_children):
+        """"""
+        pass
     
-    @staticmethod
-    @lru_cache()
-    def _compile(rule_name, string):
-        ast = GRAMMAR[rule_name].parse(string)
-        generator = InstructionGenerator()
-        generator.visit(ast)
-        return generator.instructions
+    def visit_parent_any(self, node, visited_children):
+        """"""
+        pass
 
 
 class CompileError(Exception):

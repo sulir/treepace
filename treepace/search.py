@@ -9,7 +9,7 @@ class SearchMachine(ReprMixin):
     
     def __init__(self, node, instructions, variables):
         """Initialize the VM with the default state."""
-        self.branches = [SearchBranch(node, instructions, self)]
+        self.branches = [SearchBranch(node, instructions[:], self)]
         self.machine_vars = variables
     
     def search(self):
