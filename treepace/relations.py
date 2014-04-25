@@ -10,6 +10,10 @@ class Child:
     def search(self, node):
         """Return an iterable containing this node's children."""
         return node.children
+    
+    def build(self, context, node):
+        """Add the given node as a first child of the context node."""
+        context.add_child(node)
 
 
 class Sibling:
@@ -40,7 +44,7 @@ class NextSibling:
             return []
     
     def build(self, context, node):
-        """Insert the given node after the context node."""
+        """Insert the given node just after the context node."""
         context.parent.insert_child(node, context.index + 1)
 
 

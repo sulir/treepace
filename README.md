@@ -9,4 +9,4 @@ The main goals are:
 
 * simple API and "one line per transformation" syntax - e.g. `tree.transform('item -> li')`
 * bidirectional integration with the host language - transformations can call Python functions easily
-* nodes are real objects and thus can react to each change which is useful for visualization, debugging and mapping to resources like a file system
+* nodes are real objects and thus can react to changes which is useful for visualization, debugging and mapping to resources like a file system

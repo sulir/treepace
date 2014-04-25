@@ -1,5 +1,6 @@
 """The main tree class implementation."""
 
+from treepace.build import BuildMachine
 from treepace.compiler import Compiler
 from treepace.formats import ParenText
 from treepace.nodes import Node
@@ -61,12 +62,15 @@ class Tree(EqualityMixin, ReprMixin):
         a callback function returning the new tree.
         """
         matches = self.search(pattern, **variables)
+        if not callable(replacement):
+            instructions = Compiler.compile_replacement(replacement)
         
-        if callable(replacement):
-            for match in matches:
+        for match in matches:
+            if callable(replacement):
                 tree = replacement(match)
-        else:
-            pass
+            else:
+                tree = BuildMachine(match, instructions, variables).build()
+        return tree # ...
     
     def transform(self, program, **variables):
         """Execute the transformation program which can contain multiple rules
