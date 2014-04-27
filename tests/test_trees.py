@@ -1,6 +1,6 @@
 from re import sub
 import unittest
-from treepace.trees import Subtree, Tree
+from treepace.trees import Subtree, SubtreeError, Tree
 
 class TestTree(unittest.TestCase):
     def test_search(self):
@@ -14,6 +14,10 @@ class TestTree(unittest.TestCase):
         tree = Tree.load('a (b (c) b (c))')
         tree.replace('{b} < {c}', '[f($2)] < $1', f=lambda x: sub('c', 'R', x))
         self.assertEqual(tree, Tree.load('a (R (b) R (b))'))
+        
+        tree = Tree.load('a (b (c (d)) b (c (e)))')
+        tree.replace('b < c', 'x')
+        self.assertEqual(tree, Tree.load('a (x (d) x(e))'))
 
 
 class TestSubtree(unittest.TestCase):
@@ -22,7 +26,7 @@ class TestSubtree(unittest.TestCase):
         subtree = Subtree([tree.node(2), tree.node(3)])
         subtree.add_node(tree.node(1))
         self.assertEqual(subtree.to_tree(), Tree.load('1 (2 (3))'))
-        self.assertRaises(ValueError, lambda: subtree.add_node(tree.node(5)))
+        self.assertRaises(SubtreeError, lambda: subtree.add_node(tree.node(5)))
         subtree.add_node(tree.node(6))
         self.assertEqual(subtree.to_tree(), Tree.load('1 (2 (3 6))'))
     

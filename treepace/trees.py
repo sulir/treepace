@@ -1,68 +1,12 @@
 """The main tree class and a subtree implementation."""
 
-from itertools import chain
+from treepace.base import TreeBase
 from treepace.build import BuildMachine
 from treepace.compiler import Compiler
 from treepace.formats import ParenText
 from treepace.nodes import Node
 from treepace.replace import ReplaceError, ReplaceStrategy
-from treepace.search import SearchMachine
-from treepace.utils import EqualityMixin, ReprMixin
-
-class TreeBase(EqualityMixin, ReprMixin):
-    """An abstract class containing the interface and implementation common
-    for both a tree and a subtree."""
-    
-    @property
-    def root(self):
-        """Return the current root node."""
-        return self._root
-    
-    def traverse(self, node=lambda node: [], down=lambda: [], right=lambda: [],
-                 up=lambda: []):
-        """Traverse the tree in a pre-order manner with direction signaling.
-        
-        For each visited node or direction, execute the supplied function and
-        generate the items which it returned. For example, given the tree
-        'a (b c)', the resulting sequence is node(a), down(), node(b), right(),
-        node(c), up().
-        """
-        def generate(context):
-            for item in node(context):
-                yield item
-            children = self._node_children(context)
-            if children:
-                for item in down():
-                    yield item
-                for index, child in enumerate(children):
-                    if index != 0:
-                        for item in right():
-                            yield item
-                    for item in generate(child):
-                        yield item
-                for item in up():
-                    yield item
-        
-        return generate(self._root)
-    
-    def preorder(self):
-        """Return a generator for pre-order tree traversal."""
-        return self.traverse(lambda node: [node])
-    
-    def node(self, value):
-        """Return the first node with the given value (using string
-        comparison)."""
-        compare = lambda node: str(node.value) == str(value)
-        return next(filter(compare, self.preorder()), None)
-    
-    def leaves(self):
-        """Return all leaves of the subtree."""
-        def find_leaves(node):
-            children = list(self._node_children(node))
-            return chain(*map(find_leaves, children)) if children else [node]
-        
-        return list(find_leaves(self._root))
-
+from treepace.search import Match, SearchMachine
 
 class Tree(TreeBase):
     """A general tree which can contain any types of nodes."""
@@ -104,6 +48,7 @@ class Tree(TreeBase):
         a callback function returning the new tree.
         """
         matches = self.search(pattern, **variables)
+        Match.check_disjoint(matches)
         if not callable(replacement):
             instructions = Compiler.compile_replacement(replacement)
         
@@ -142,9 +87,11 @@ class Tree(TreeBase):
 
 
 class Subtree(TreeBase):
-    """A connected part of a tree with one root node and one or more leaves.
+    """A subtree is a connected part of a tree with one root node and one
+    or more leaves.
     
-    The main tree should not be changed while its subtree is in use.
+    Each subtree node reference points to the same object as the node
+    reference in the main tree.
     """
     
     def __init__(self, nodes=[]):
@@ -161,9 +108,23 @@ class Subtree(TreeBase):
         """
         if self._root is None or node == self._root.parent:
             self._root = node
-        elif node.parent not in self._nodes:
-            raise ValueError("Disconnected subtree node")
+        elif node.parent not in self._nodes and node not in self._nodes:
+            raise SubtreeError("Disconnected subtree node '%s'" % node)
         self._nodes.add(node)
+    
+    def remove_node(self, node):
+        """Remove the given leaf node from the subtree."""
+        if not next(self._node_children(node), False):
+            self._nodes.remove(node)
+            if node == self._root:
+                self._root = None
+        else:
+            raise SubtreeError("Cannot remove non-leaf subtree node")
+    
+    @property
+    def nodes(self):
+        """The returned node set should not be modified."""
+        return self._nodes
     
     def connected_leaves(self):
         """Return leaves of the subtree which have children in the main tree."""
@@ -200,3 +161,8 @@ class Subtree(TreeBase):
     def __str__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
+
+
+class SubtreeError(Exception):
+    """Raised when a subtree cannot be modified in a given way."""
+    pass

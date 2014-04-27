@@ -49,10 +49,10 @@ class Node(ReprMixin):
         child._parent = self
         self._children.insert(index, child)
     
-    def delete_child(self, index):
-        """Delete the child node at the specified index."""
-        self._children[index]._parent = None
-        del self._children[index]
+    def delete(self):
+        """Delete the node (it must not be a root)."""
+        del self.parent._children[self.index]
+        self._parent = None
     
     @property
     def index(self):
@@ -116,9 +116,9 @@ class LogNode(Node):
         info = str(child.value), index, self.str_path()
         self._log("Insert child '%s' at index %d of '%s'", *info)
     
-    def delete_child(self, index):
-        path = self.children[index].str_path()
-        super().delete_child(index)
+    def delete(self):
+        path = self.str_path()
+        super().delete()
         self._log("Delete node '%s'", path)
     
     def _log(self, text, *args):

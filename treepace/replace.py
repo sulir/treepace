@@ -14,7 +14,7 @@ class ReplaceStrategy:
     @staticmethod
     def all_strategies():
         """Return a list of all strategies in the order they should be tried."""
-        return [SameShape]
+        return [SameShape, ToOneNode]
 
 
 class SameShape(ReplaceStrategy):
@@ -31,6 +31,26 @@ class SameShape(ReplaceStrategy):
         """Set the subtree node values to the values of the tree."""
         for old, new in zip(self._old.preorder(), self._new.preorder()):
             old.value = new.value
+
+
+class ToOneNode(ReplaceStrategy):
+    """Replacement of a subtree by one node."""
+    
+    def test(self):
+        """The new tree must consist of only one node."""
+        return not self._new.root.children
+    
+    def apply(self):
+        """The replacement node child list will consist of all children
+        of the original subtree leaves."""
+        while len(self._old.nodes) > 1:
+            for leaf in list(self._old.leaves()):
+                self._old.remove_node(leaf)
+                index = leaf.index
+                for child in reversed(leaf.children):
+                    leaf.parent.insert_child(child, index)
+                leaf.delete()
+        self._old.root.value = self._new.root.value
 
 
 class ReplaceError(Exception):

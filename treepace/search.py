@@ -3,6 +3,7 @@
 from treepace.relations import Descendant
 import treepace.trees
 from treepace.utils import ReprMixin
+from treepace.replace import ReplaceError
 
 class SearchMachine(ReprMixin):
     """A tree-searching virtual machine."""
@@ -82,6 +83,15 @@ class Match(ReprMixin):
     def copy(self):
         """Return a list of copies of all subtrees."""
         return Match(list(map(lambda x: x.copy(), self._subtrees)))
+    
+    @staticmethod
+    def check_disjoint(matches):
+        """Raise ReplaceError if there exists a node which is present
+        in at least two matches from the given list of matches."""
+        subtree_nodes = [match.group().nodes for match in matches]
+        total_count = sum(map(len, subtree_nodes))
+        if len(set().union(*subtree_nodes)) < total_count:
+            raise ReplaceError("Overlapping matches")
     
     def __str__(self):
         """Return a string containing all groups (subtrees)."""
