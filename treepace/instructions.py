@@ -1,7 +1,6 @@
 """Virtual machine instructions."""
 
 from re import sub
-import treepace.nodes
 from treepace.relations import Child, NextSibling, Parent
 import treepace.trees
 from treepace.utils import EqualityMixin, ReprMixin
@@ -142,7 +141,7 @@ class AddNode(Instruction):
         """Create a new node, add it to the tree (or create a tree if it
         does not yet exist) and set it as the context node."""
         value = self._evaluate_code(vm.machine_vars, vm.match)
-        node = treepace.nodes.Node(value)
+        node = vm.match.group().root.__class__(value)
         if not vm.tree:
             vm.tree = treepace.trees.Tree(node)
         else:

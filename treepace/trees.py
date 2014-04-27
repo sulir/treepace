@@ -67,7 +67,8 @@ class Tree(TreeBase):
     def copy(self):
         """Shallow-copy the tree."""
         def make_tree(node):
-            return Node(node.value, (make_tree(c) for c in node.children))
+            children = (make_tree(child) for child in node.children)
+            return node.__class__(node.value, children)
         
         return Tree(make_tree(self._root))
     
@@ -134,7 +135,7 @@ class Subtree(TreeBase):
         """Shallow-copy node values into a new tree (with new nodes)."""
         def make_tree(node):
             children = (make_tree(child) for child in self._node_children(node))
-            return Node(node.value, children)
+            return node.__class__(node.value, children)
         
         return Tree(make_tree(self._root)) if self._root else None
     
