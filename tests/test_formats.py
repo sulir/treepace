@@ -3,7 +3,7 @@ import unittest
 from treepace.formats import (IndentedText, ParenText, XmlText,
     InvalidFormatError)
 from treepace.nodes import Node
-from treepace.tree import Tree
+from treepace.trees import Tree
 
 class TestFormats(unittest.TestCase):
     INDENTED = '''\

@@ -3,8 +3,7 @@
 from re import sub
 import treepace.nodes
 from treepace.relations import Child, NextSibling, Parent
-import treepace.subtree
-import treepace.tree
+import treepace.trees
 from treepace.utils import EqualityMixin, ReprMixin
 
 class Instruction(EqualityMixin, ReprMixin):
@@ -85,7 +84,7 @@ class GroupStart(Instruction):
     def execute(self, branch):
         """Add the corresponding group number and subtrees to the machine."""
         branch.groups.add(self.number)
-        branch.match.groups().append(treepace.subtree.Subtree())
+        branch.match.groups().append(treepace.trees.Subtree())
     
     def __str__(self):
         """Return the string representation of the instruction."""
@@ -145,7 +144,7 @@ class AddNode(Instruction):
         value = self._evaluate_code(vm.machine_vars, vm.match)
         node = treepace.nodes.Node(value)
         if not vm.tree:
-            vm.tree = treepace.tree.Tree(node)
+            vm.tree = treepace.trees.Tree(node)
         else:
             vm.relation().build(vm.node, node)
         vm.node = node

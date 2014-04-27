@@ -1,7 +1,7 @@
 """A tree-searching virtual machine and searching branch implementation."""
 
 from treepace.relations import Descendant
-import treepace.subtree
+import treepace.trees
 from treepace.utils import ReprMixin
 
 class SearchMachine(ReprMixin):
@@ -42,7 +42,7 @@ class SearchBranch(ReprMixin):
         a match object (a subtree list containing current results), a context
         node, a current relation and an instruction list."""
         self.groups = {0}
-        self.match = treepace.subtree.Match([treepace.subtree.Subtree()])
+        self.match = Match([treepace.trees.Subtree()])
         self.node = node
         self.relation = Descendant
         self.instructions = instructions
@@ -62,3 +62,27 @@ class SearchBranch(ReprMixin):
         fmt = "groups: %s, match: %s, node: %s, relation: %s, instructions: %s"
         return fmt % (self.groups, list(map(str, self.match.groups())),
             self.node, self.relation.name, list(map(str, self.instructions)))
+
+
+class Match(ReprMixin):
+    """A match is a list of groups; each group is one subtree."""
+    
+    def __init__(self, groups):
+        """Initialize a match with a list of subtrees."""
+        self._subtrees = groups
+    
+    def group(self, number=0):
+        """Return the given group; group 0 is the whole match."""
+        return self._subtrees[number]
+    
+    def groups(self):
+        """Return the list of all groups."""
+        return self._subtrees
+    
+    def copy(self):
+        """Return a list of copies of all subtrees."""
+        return Match(list(map(lambda x: x.copy(), self._subtrees)))
+    
+    def __str__(self):
+        """Return a string containing all groups (subtrees)."""
+        return str(list(map(str, self._subtrees)))

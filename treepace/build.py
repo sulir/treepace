@@ -9,7 +9,7 @@ class BuildMachine(ReprMixin):
     def __init__(self, match, instructions, variables):
         """Initialize the VM with the default state."""
         self.match = match
-        self.instructions = instructions
+        self.instructions = instructions[:]
         self.node = None
         self.relation = None
         self.tree = None
