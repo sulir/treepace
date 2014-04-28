@@ -1,5 +1,6 @@
 from re import sub
 import unittest
+from treepace.nodes import Node
 from treepace.trees import Subtree, SubtreeError, Tree
 
 class TestTree(unittest.TestCase):
@@ -11,6 +12,10 @@ class TestTree(unittest.TestCase):
             self.assertEqual(match.group(1).to_tree(), Tree.load('a'))
     
     def test_replace(self):
+        tree = Tree.load('m (n)')
+        tree.replace('"non-matching"', 'x')
+        self.assertEqual(tree, Tree.load('m (n)'))
+        
         tree = Tree.load('a (b (c) b (c))')
         tree.replace('{b} < {c}', '[f($2)] < $1', f=lambda x: sub('c', 'R', x))
         self.assertEqual(tree, Tree.load('a (R (b) R (b))'))
@@ -18,6 +23,15 @@ class TestTree(unittest.TestCase):
         tree = Tree.load('a (b (c (d)) b (c (e)))')
         tree.replace('b < c', 'x')
         self.assertEqual(tree, Tree.load('a (x (d) x(e))'))
+    
+    def test_transform(self):
+        tree = Tree.load('add (1 add (add (2 3) 4))')
+        tree.transform('''
+            [isinstance(_, str) and _.isdigit()] -> [int($0)]
+            add < {[is_int(_)]}, {[is_int(_)]} -> [$1 + $2]
+            ''', is_int=lambda x: isinstance(x, int)
+        )
+        self.assertEqual(tree, Tree(Node(10)))
 
 
 class TestSubtree(unittest.TestCase):

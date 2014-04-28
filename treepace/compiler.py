@@ -60,7 +60,7 @@ class Compiler:
         instructions and replacing instructions."""
         ast = GRAMMAR['rule'].parse(rule)
         search_instructions = SearchGenerator().visit(ast.children[0])
-        replace_instructions = BuildGenerator().visit(ast.children[1])
+        replace_instructions = BuildGenerator().visit(ast.children[2])
         return (search_instructions, replace_instructions)
 
 

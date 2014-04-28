@@ -61,8 +61,29 @@ class Tree(TreeBase):
     
     def transform(self, program, **variables):
         """Execute the transformation program which can contain multiple rules
-        in the form: pattern -> replacement."""
-        pass
+        in the form: pattern -> replacement.
+        
+        Each rule is executed while its pattern matches. In addition, the whole
+        rule list is looped until no rule matches.
+        """
+        lines = (line for line in program.splitlines() if line.strip())
+        rules = map(Compiler.compile_rule, lines)
+        
+        while True:
+            rule_matched = False
+            for search, replace in rules:
+                matches = True
+                while matches:
+                    machine = SearchMachine(self.root, search, variables)
+                    matches = machine.search()
+                    Match.check_disjoint(matches)
+                    for match in matches:
+                        tree = BuildMachine(match, replace, variables).build()
+                        match.group().replace_by(tree)
+                    if matches:
+                        rule_matched = True
+            if not rule_matched:
+                break
     
     def copy(self):
         """Shallow-copy the tree."""
