@@ -54,6 +54,21 @@ class Node(ReprMixin):
         del self.parent._children[self.index]
         self._parent = None
     
+    def replace_by(self, node):
+        """Replace the node by an another node (including children)."""
+        if self.parent:
+            parent, index = self._parent, self.index
+            self._parent = None
+            parent._children[index] = node
+            node._parent = parent
+        else:
+            self.value = node.value
+            for child in self._children:
+                child._parent = None
+            self._children = node.children
+            for child in self._children:
+                child._parent = self
+    
     @property
     def index(self):
         """Return a zero-based order of this node among its siblings."""
@@ -120,6 +135,11 @@ class LogNode(Node):
         path = self.str_path()
         super().delete()
         self._log("Delete node '%s'", path)
+    
+    def replace_by(self, node):
+        replaced, replacement = self.str_path(), node.str_path()
+        super().replace_by(node)
+        self._log("Replace '%s' by '%s'", replaced, replacement)
     
     def _log(self, text, *args):
         print(text % args, file=self._file)

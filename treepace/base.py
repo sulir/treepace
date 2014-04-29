@@ -49,6 +49,7 @@ class TreeBase(EqualityMixin, ReprMixin):
         compare = lambda node: str(node.value) == str(value)
         return next(filter(compare, self.preorder()), None)
     
+    @property
     def leaves(self):
         """Return all leaves of the subtree."""
         def find_leaves(node):
@@ -56,3 +57,9 @@ class TreeBase(EqualityMixin, ReprMixin):
             return chain(*map(find_leaves, children)) if children else [node]
         
         return list(find_leaves(self._root))
+    
+    @property
+    def inner(self):
+        """Return all non-leaf nodes (including the root)."""
+        leaves = set(self.leaves)
+        return (node for node in self.preorder() if node not in leaves)

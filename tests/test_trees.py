@@ -23,6 +23,14 @@ class TestTree(unittest.TestCase):
         tree = Tree.load('a (b (c (d)) b (c (e)))')
         tree.replace('b < c', 'x')
         self.assertEqual(tree, Tree.load('a (x (d) x(e))'))
+        
+        tree = Tree.load('a (b (c) d (e))')
+        tree.replace('a < b, d', 'x < y, z')
+        self.assertEqual(tree, Tree.load('x (y (c) z (e))'))
+        
+        tree = Tree.load('a (b (c) d e (f))')
+        tree.replace('a < b, d, e', 'w < x < y, z')
+        self.assertEqual(tree, Tree.load('w (x (y (c) z(f)))'))
     
     def test_transform(self):
         tree = Tree.load('add (1 add (add (2 3) 4))')
@@ -49,5 +57,5 @@ class TestSubtree(unittest.TestCase):
         subtree = Subtree([tree.node('root'), tree.node('connected'),
             tree.node('leaf2')])
         connected = [tree.node('connected')]
-        self.assertEqual(subtree.connected_leaves(), connected)
-        self.assertEqual(subtree.leaves(), connected + [tree.node('leaf2')])
+        self.assertEqual(subtree.connected_leaves, connected)
+        self.assertEqual(subtree.leaves, connected + [tree.node('leaf2')])

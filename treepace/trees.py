@@ -148,9 +148,10 @@ class Subtree(TreeBase):
         """The returned node set should not be modified."""
         return self._nodes
     
+    @property
     def connected_leaves(self):
         """Return leaves of the subtree which have children in the main tree."""
-        return [leaf for leaf in self.leaves() if leaf.children]
+        return [leaf for leaf in self.leaves if leaf.children]
     
     def to_tree(self):
         """Shallow-copy node values into a new tree (with new nodes)."""

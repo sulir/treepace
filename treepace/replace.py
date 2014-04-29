@@ -1,6 +1,6 @@
 """Tree replacing strategies."""
 
-from itertools import zip_longest
+from itertools import chain, zip_longest
 
 class ReplaceStrategy:
     """A tree replacing strategy is an algorithm for replacement of a subtree
@@ -11,10 +11,14 @@ class ReplaceStrategy:
         self._old = old
         self._new = new
     
+    def _inner_nonsubtree_child(self):
+        inner_children = chain(*(inner.children for inner in self._old.inner))
+        return any(child not in self._old.nodes for child in inner_children)
+    
     @staticmethod
     def all_strategies():
         """Return a list of all strategies in the order they should be tried."""
-        return [SameShape, ToOneNode]
+        return [SameShape, ToOneNode, SameLeafCount, ConnectedLeaves]
 
 
 class SameShape(ReplaceStrategy):
@@ -44,13 +48,48 @@ class ToOneNode(ReplaceStrategy):
         """The replacement node child list will consist of all children
         of the original subtree leaves."""
         while len(self._old.nodes) > 1:
-            for leaf in list(self._old.leaves()):
+            for leaf in list(self._old.leaves):
                 self._old.remove_node(leaf)
                 index = leaf.index
                 for child in reversed(leaf.children):
                     leaf.parent.insert_child(child, index)
                 leaf.delete()
         self._old.root.value = self._new.root.value
+
+
+class LeafStrategy(ReplaceStrategy):
+    """An abstract class representing replacement of a subtree by a tree whose
+    leaf count is the same as the count of the subtree's leaves or
+    'connected leaves'."""
+    
+    def test(self):
+        """In addition, non-leaf subtree nodes must not have children outside
+        of the subtree."""
+        same_leaf_count = len(self._leaves()) == len(self._new.leaves)
+        return same_leaf_count and not self._inner_nonsubtree_child()
+    
+    def apply(self):
+        """Children of the subtree leaves become the children of the tree
+        leaves, then the roots are replaced."""
+        for old_leaf, new_leaf in zip(self._leaves(), self._new.leaves):
+            for child in old_leaf.children:
+                new_leaf.add_child(child)
+        self._old.root.replace_by(self._new.root)
+
+
+class SameLeafCount(LeafStrategy):
+    """Replacement of a subtree by a tree with the same leaf count."""
+    
+    def _leaves(self):
+        return self._old.leaves
+
+
+class ConnectedLeaves(LeafStrategy):
+    """Replacement of a subtree by a tree whose leaf count is the same
+    as the count of the subtree's 'connected leaves'."""
+    
+    def _leaves(self):
+        return self._old.connected_leaves
 
 
 class ReplaceError(Exception):
