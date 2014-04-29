@@ -50,8 +50,8 @@ class TestTree(unittest.TestCase):
     def test_transform(self):
         tree = Tree.load('add (1 add (add (2 3) 4))')
         tree.transform('''
-            [isinstance(_, str) and _.isdigit()] -> [int($0)]
-            add < {[is_int(_)]}, {[is_int(_)]} -> [$1 + $2]
+            [isinstance($, str) and $.isdigit()] -> [int($0)]
+            add < {[is_int($)]}, {[is_int($)]} -> [$1 + $2]
             ''', is_int=lambda x: isinstance(x, int)
         )
         self.assertEqual(tree, Tree(Node(10)))

@@ -1,6 +1,6 @@
 """Virtual machine instructions."""
 
-from re import sub
+import re
 from treepace.relations import Child, NextSibling, Parent
 import treepace.trees
 from treepace.utils import EqualityMixin, ReprMixin
@@ -10,15 +10,18 @@ class Instruction(EqualityMixin, ReprMixin):
     
     def _compile_code(self, expression, instr_vars):
         """Compile and save the given Python code."""
-        self.expression = sub(r'\$(\d+)', r'group(\1).root.value', expression)
+        expression = re.sub(r'\$(\d+)', r'group(\1).root.value', expression)
+        self.expression = expression.replace('$', 'node.value')
         self.code = compile(self.expression, '<string>', 'eval')
         self.instr_vars = instr_vars
     
     def _evaluate_code(self, machine_vars, match, node=None):
-        """Evaluate the saved code in an environment containing variables from
-        the VM, the instruction object, matched groups and (optionally)
-        the given node."""
-        variables = machine_vars.copy()
+        """Evaluate the saved code in an environment containing auxiliary
+        functions, variables from the VM and the instruction object, matched
+        groups and (optionally) the given node."""
+        variables = {'text': (lambda obj: {'xmltext': str(obj)}),
+                     'num': (lambda xml_obj: int(xml_obj['xmltext']))}
+        variables.update(machine_vars)
         variables.update(self.instr_vars)
         variables['group'] = match.group
         if node:

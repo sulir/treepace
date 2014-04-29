@@ -103,10 +103,10 @@ class XmlText:
                 node.add_child(new_node)
                 for attr in elem.attrib:
                     new_node.add_child(node_class({attr: elem.attrib[attr]}))
-                if elem.text:
+                if elem.text and not elem.text.isspace():
                     new_node.add_child(node_class({'xmltext': elem.text}))
                 load(elem, new_node)
-                if elem.tail:
+                if elem.tail and not elem.tail.isspace():
                     tail = node_class({'xmltext': elem.tail})
                     new_node.parent.add_child(tail)
         
