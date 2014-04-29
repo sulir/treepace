@@ -101,9 +101,14 @@ class XmlText:
             for elem in doc:
                 new_node = node_class(elem.tag)
                 node.add_child(new_node)
-                for attribute, value in elem.attrib:
-                    node.add_child({attribute: value})
+                for attr in elem.attrib:
+                    new_node.add_child(node_class({attr: elem.attrib[attr]}))
+                if elem.text:
+                    new_node.add_child(node_class({'xmltext': elem.text}))
                 load(elem, new_node)
+                if elem.tail:
+                    tail = node_class({'xmltext': elem.tail})
+                    new_node.parent.add_child(tail)
         
         load(doc, node)
         return node
@@ -113,9 +118,20 @@ class XmlText:
         doc = ElementTree.Element(str(tree))
         
         def save(node, doc):
+            sub = None
             for child in node.children:
-                sub = ElementTree.SubElement(doc, str(child))
-                save(child, sub)
+                if isinstance(child.value, dict):
+                    for key, value in child.value.items():
+                        if key == 'xmltext':
+                            if sub is None:
+                                doc.text = value
+                            else:
+                                sub.tail = value
+                        else:
+                            doc.attrib[key] = value
+                else:
+                    sub = ElementTree.SubElement(doc, str(child))
+                    save(child, sub)
         
         save(tree, doc)
         xml_str = ElementTree.tostring(doc, encoding='unicode')

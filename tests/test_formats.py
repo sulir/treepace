@@ -1,3 +1,4 @@
+import re
 from textwrap import dedent
 import unittest
 from treepace.formats import (IndentedText, ParenText, XmlText,
@@ -14,7 +15,7 @@ class TestFormats(unittest.TestCase):
                     item2
                     item3'''
     PARENTHESIZED = 'root (item1 (sub (subsub)) item2 item3)'
-    XML = '''\
+    XML = re.sub(r'\s+', '', '''\
             <root>
                 <item1>
                     <sub>
@@ -23,7 +24,7 @@ class TestFormats(unittest.TestCase):
                 </item1>
                 <item2/>
                 <item3/>
-            </root>'''
+            </root>''')
     TREE = Tree(Node('root', [Node('item1', [Node('sub', [Node('subsub')])]),
                               Node('item2'),
                               Node('item3')]))
@@ -51,6 +52,4 @@ class TestFormats(unittest.TestCase):
         self.assertEqual(Tree.load(self.XML, XmlText), self.TREE)
     
     def test_save_xml(self):
-        result = self.TREE.save(XmlText).splitlines()
-        expected = dedent(self.XML).splitlines()
-        self.assertEqual(result, expected)
+        self.assertEqual(re.sub(r'\s+', '', self.TREE.save(XmlText)), self.XML)
