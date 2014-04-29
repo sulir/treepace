@@ -11,6 +11,17 @@ class TestTree(unittest.TestCase):
             self.assertEqual(match.group().to_tree(), expected)
             self.assertEqual(match.group(1).to_tree(), Tree.load('a'))
     
+    def test_match(self):
+        tree = Tree.load('a (a (b c))')
+        match = tree.match('a < a < c')[0].group().to_tree()
+        self.assertEqual(match, Tree.load('a (a (c))'))
+        self.assertFalse(tree.match('a < b, c'))
+    
+    def test_fullmatch(self):
+        tree = Tree.load('a (b c)')
+        self.assertTrue(tree.fullmatch('a < b, c'))
+        self.assertFalse(tree.fullmatch('a < b'))
+    
     def test_replace(self):
         tree = Tree.load('m (n)')
         tree.replace('"non-matching"', 'x')

@@ -8,9 +8,9 @@ from treepace.replace import ReplaceError
 class SearchMachine(ReprMixin):
     """A tree-searching virtual machine."""
     
-    def __init__(self, node, instructions, variables):
+    def __init__(self, node, instructions, variables, relation=Descendant):
         """Initialize the VM with the default state."""
-        self.branches = [SearchBranch(node, instructions[:], self)]
+        self.branches = [SearchBranch(node, instructions[:], self, relation)]
         self.machine_vars = variables
     
     def search(self):
@@ -38,24 +38,24 @@ class SearchMachine(ReprMixin):
 class SearchBranch(ReprMixin):
     """The search process can 'divide' itself into multiple branches."""
     
-    def __init__(self, node, instructions, vm):
+    def __init__(self, node, instructions, vm, relation):
         """Each branch is represented by a set of current group numbers,
         a match object (a subtree list containing current results), a context
         node, a current relation and an instruction list."""
         self.groups = {0}
         self.match = Match([treepace.trees.Subtree()])
         self.node = node
-        self.relation = Descendant
+        self.relation = relation
         self.instructions = instructions
         self.vm = vm
     
     def copy(self):
         """Return a copy of this branch which can be modified without affecting
         the original branch."""
-        branch = SearchBranch(self.node, self.instructions[:], self.vm)
+        branch = SearchBranch(self.node, self.instructions[:], self.vm,
+                              self.relation)
         branch.groups = self.groups.copy()
         branch.match = self.match.copy()
-        branch.relation = self.relation
         return branch
     
     def __str__(self):

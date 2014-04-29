@@ -59,7 +59,8 @@ class Parent:
 
 
 class Descendant:
-    """A descendant or the node itself."""
+    """A descendant or the node itself -- used when searching anywhere
+    in the tree."""
     
     name = "desc"
     
@@ -67,3 +68,13 @@ class Descendant:
         """Return an iterable with all node's descendants in a pre-order
         manner."""
         return treepace.trees.Tree(node).preorder()
+
+
+class Identic:
+    """An identity relation, used when searching exactly from the root."""
+    
+    name = "id"
+    
+    def search(self, node):
+        """Return a list with the given node."""
+        return [node]

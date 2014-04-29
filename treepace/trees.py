@@ -5,6 +5,7 @@ from treepace.build import BuildMachine
 from treepace.compiler import Compiler
 from treepace.formats import ParenText
 from treepace.nodes import Node
+from treepace.relations import Identic
 from treepace.replace import ReplaceError, ReplaceStrategy
 from treepace.search import Match, SearchMachine
 
@@ -32,14 +33,25 @@ class Tree(TreeBase):
         return (fmt() if callable(fmt) else fmt).save_tree(self.root)
     
     def search(self, pattern, **variables):
-        """Search the whole tree for a given subtree."""
+        """Search for a given pattern anywhere in the tree and return a list
+        of matches."""
         instructions = Compiler.compile_pattern(pattern)
         return SearchMachine(self.root, instructions, variables).search()
     
-    def match(self, pattern):
-        """Return True if the pattern captures the whole tree from the root
-        to the leaves."""
-        pass
+    def match(self, pattern, **variables):
+        """Search for a given pattern from the root node and return a list
+        of matches."""
+        instrs = Compiler.compile_pattern(pattern)
+        machine = SearchMachine(self.root, instrs, variables, relation=Identic)
+        return machine.search()
+    
+    def fullmatch(self, pattern, **variables):
+        """If the tree matches the pattern from the root to the leaves, return
+        a list of matches, otherwise return an empty list."""
+        matches = self.match(pattern, **variables)
+        matched_nodes = set().union(*[match.group().nodes for match in matches])
+        all_node_count = sum(1 for _ in self.preorder())
+        return matches if len(matched_nodes) == all_node_count else []
     
     def replace(self, pattern, replacement, **variables):
         """Replace each found subtree with a new subtree.
