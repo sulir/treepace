@@ -35,6 +35,10 @@ class TestTree(unittest.TestCase):
         tree.replace('b < c', 'x')
         self.assertEqual(tree, Tree.load('a (x (d) x(e))'))
         
+        tree = Tree.load('a (b c)')
+        tree.replace('b', 'x < y, z')
+        self.assertEqual(tree, Tree.load('a (x (y z) c)'))
+        
         tree = Tree.load('a (b (c) d (e))')
         tree.replace('a < b, d', 'x < y, z')
         self.assertEqual(tree, Tree.load('x (y (c) z (e))'))

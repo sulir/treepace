@@ -18,7 +18,8 @@ class ReplaceStrategy:
     @staticmethod
     def all_strategies():
         """Return a list of all strategies in the order they should be tried."""
-        return [SameShape, ToOneNode, SameLeafCount, ConnectedLeaves]
+        return [SameShape, ToOneNode, NoConnectedLeaves, SameLeafCount,
+                SameConnectedCount]
 
 
 class SameShape(ReplaceStrategy):
@@ -57,7 +58,22 @@ class ToOneNode(ReplaceStrategy):
         self._old.root.value = self._new.root.value
 
 
-class LeafStrategy(ReplaceStrategy):
+class NoConnectedLeaves(ReplaceStrategy):
+    """Replacement of a subtree which does not have any children outside
+    the subtree."""
+    
+    def test(self):
+        """"The subtree must not have 'connected leaves' and its inner nodes
+        must not have children outside the subtree."""
+        no_connected = not self._old.connected_leaves
+        return no_connected and not self._inner_nonsubtree_child()
+    
+    def apply(self):
+        """The subtree root node is replaced by the new tree root node."""
+        self._old.root.replace_by(self._new.root)
+
+
+class LeafCountStrategy(ReplaceStrategy):
     """An abstract class representing replacement of a subtree by a tree whose
     leaf count is the same as the count of the subtree's leaves or
     'connected leaves'."""
@@ -77,14 +93,14 @@ class LeafStrategy(ReplaceStrategy):
         self._old.root.replace_by(self._new.root)
 
 
-class SameLeafCount(LeafStrategy):
+class SameLeafCount(LeafCountStrategy):
     """Replacement of a subtree by a tree with the same leaf count."""
     
     def _leaves(self):
         return self._old.leaves
 
 
-class ConnectedLeaves(LeafStrategy):
+class SameConnectedCount(LeafCountStrategy):
     """Replacement of a subtree by a tree whose leaf count is the same
     as the count of the subtree's 'connected leaves'."""
     
