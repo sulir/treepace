@@ -1,12 +1,15 @@
 """The basic node implementation, followed by custom node types with specific
 behavior."""
 
-import re
 import sys
 from treepace.utils import ReprMixin
 
 class Node(ReprMixin):
-    """An in-memory node node with references to children and a parent."""
+    """An in-memory node node with references to children and a parent.
+    
+    The constructor, the 'value' property setter and the methods 'insert_child'
+    and 'delete' are recommended to be overridden in specialized classes.
+    """
     
     def __init__(self, value, children=[]):
         """Initialize a new tree node.
@@ -41,33 +44,17 @@ class Node(ReprMixin):
     
     def add_child(self, child):
         """Add a child node to the end."""
-        child._parent = self
-        self._children.append(child)
+        self.insert_child(child, len(self._children))
     
     def insert_child(self, child, index):
         """Insert a child node at the specified index."""
         child._parent = self
         self._children.insert(index, child)
     
-    def delete(self):
+    def detach(self):
         """Delete the node (it must not be a root)."""
         del self.parent._children[self.index]
         self._parent = None
-    
-    def replace_by(self, node):
-        """Replace the node by an another node (including children)."""
-        if self.parent:
-            parent, index = self._parent, self.index
-            self._parent = None
-            parent._children[index] = node
-            node._parent = parent
-        else:
-            self.value = node.value
-            for child in self._children:
-                child._parent = None
-            self._children = node.children
-            for child in self._children:
-                child._parent = self
     
     @property
     def index(self):
@@ -93,15 +80,13 @@ class Node(ReprMixin):
         """Return a slash-separated path from the root node to this node."""
         return "/".join(self.path())
     
-    def match(self, pattern):
-        """Return True if this node matches the pattern (a string literal
-        or a Python predicate)."""
-        code = re.search(r'\[(.*)\]', pattern)
-        if code:
-            _ = self.value
-            return eval(code.group(1))
-        else:
-            return str(self.value) == pattern
+    def replace_by(self, node):
+        """Replace the node by an another node (including children)."""
+        self.value = node.value
+        for child in self.children:
+            child.detach()
+        for child in node.children:
+            self.add_child(child)
     
     def __str__(self):
         """Return a string representation of the node's value."""
@@ -122,24 +107,18 @@ class LogNode(Node):
         Node.value.fset(self, _value)
         self._log("Change value of '%s' to '%s'", old_path, str(_value))
     
-    def add_child(self, child):
-        super().add_child(child)
-        self._log("Add child '%s' to '%s'", str(child.value), self.str_path())
-    
     def insert_child(self, child, index):
         super().insert_child(child, index)
         info = str(child.value), index, self.str_path()
         self._log("Insert child '%s' at index %d of '%s'", *info)
     
-    def delete(self):
+    def detach(self):
         path = self.str_path()
-        super().delete()
-        self._log("Delete node '%s'", path)
+        super().detach()
+        self._log("Detach node '%s'", path)
     
-    def replace_by(self, node):
-        replaced, replacement = self.str_path(), node.str_path()
-        super().replace_by(node)
-        self._log("Replace '%s' by '%s'", replaced, replacement)
+    def __del__(self):
+        self._log("Delete node '%s'", self.str_path())
     
     def _log(self, text, *args):
         print(text % args, file=self._file)

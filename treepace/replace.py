@@ -51,10 +51,11 @@ class ToOneNode(ReplaceStrategy):
         while len(self._old.nodes) > 1:
             for leaf in list(self._old.leaves):
                 self._old.remove_node(leaf)
-                index = leaf.index
+                parent, index = leaf.parent, leaf.index
+                leaf.detach()
                 for child in reversed(leaf.children):
-                    leaf.parent.insert_child(child, index)
-                leaf.delete()
+                    parent.insert_child(child, index)
+        
         self._old.root.value = self._new.root.value
 
 
@@ -89,6 +90,7 @@ class LeafCountStrategy(ReplaceStrategy):
         leaves, then the roots are replaced."""
         for old_leaf, new_leaf in zip(self._leaves(), self._new.leaves):
             for child in old_leaf.children:
+                child.detach()
                 new_leaf.add_child(child)
         self._old.root.replace_by(self._new.root)
 

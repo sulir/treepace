@@ -10,7 +10,7 @@ setup(name='Treepace',
       description='Tree Transformation Language',
       author='Matúš Sulír',
       url='https://github.com/sulir/treepace',
-      packages=['treepace'],
+      packages=['treepace', 'treepace.examples'],
       test_suite='tests',
       install_requires='parsimonious==0.5',
       classifiers=[
