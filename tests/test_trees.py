@@ -55,6 +55,12 @@ class TestTree(unittest.TestCase):
             ''', is_int=lambda x: isinstance(x, int)
         )
         self.assertEqual(tree, Tree(Node(10)))
+        
+        tree = Tree.load('a (b)')
+        tree.transform('''
+            x -> y
+            a -> x''')
+        self.assertEqual(tree, Tree.load('y (b)'))
 
 
 class TestSubtree(unittest.TestCase):

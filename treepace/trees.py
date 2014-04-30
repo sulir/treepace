@@ -79,7 +79,7 @@ class Tree(TreeBase):
         rule list is looped until no rule matches.
         """
         lines = (line for line in program.splitlines() if line.strip())
-        rules = map(Compiler.compile_rule, lines)
+        rules = [Compiler.compile_rule(line) for line in lines]
         
         while True:
             rule_matched = False
