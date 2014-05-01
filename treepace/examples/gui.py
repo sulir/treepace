@@ -102,7 +102,7 @@ min
             3
         4'''
 
-DEFAULT_PROGRAM = 'min < {[$.isdigit()]}, {[$.isdigit()]} -> [min($1, $2)]'
+DEFAULT_PROGRAM = 'min < {[_.isdigit()]}, {[_.isdigit()]} -> [min($1, $2)]'
 
 if __name__ == '__main__':
     Window().mainloop()

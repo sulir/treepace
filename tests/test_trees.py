@@ -46,12 +46,17 @@ class TestTree(unittest.TestCase):
         tree = Tree.load('a (b (c) d e (f))')
         tree.replace('a < b, d, e', 'w < x < y, z')
         self.assertEqual(tree, Tree.load('w (x (y (c) z(f)))'))
+        
+        tree = Tree.load('a (b c)')
+        repl = lambda match: Tree(Node('x', [Node(match.group().root.value)]))
+        tree.replace('a < b', repl)
+        self.assertEqual(tree, Tree.load('x (a c)'))
     
     def test_transform(self):
         tree = Tree.load('add (1 add (add (2 3) 4))')
         tree.transform('''
-            [isinstance($, str) and $.isdigit()] -> [int($0)]
-            add < {[is_int($)]}, {[is_int($)]} -> [$1 + $2]
+            [isinstance(_, str) and _.isdigit()] -> [int($0)]
+            add < {[is_int(_)]}, {[is_int(_)]} -> [$1 + $2]
             ''', is_int=lambda x: isinstance(x, int)
         )
         self.assertEqual(tree, Tree(Node(10)))

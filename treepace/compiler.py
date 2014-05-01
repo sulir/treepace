@@ -12,7 +12,7 @@ GRAMMAR = Grammar('''
     rule          = pattern '->' replacement
     _             = (' ' / '\t')*
     
-    pattern       = group rel_group*
+    pattern       = group (rel_group)*
     group         = node / (group_start pattern group_end)
     rel_group     = (relation group) / parent_any
     node          = any / constant / code / reference
@@ -31,7 +31,7 @@ GRAMMAR = Grammar('''
     next_sibling  = _','_
     parent_any    = _'>'_
     
-    replacement   = repl_node repl_rel_node*
+    replacement   = repl_node (repl_rel_node)*
     repl_node     = constant / code / reference
     repl_rel_node = (repl_relation node) / parent_any
     repl_relation = child / next_sibling

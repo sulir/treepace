@@ -1,6 +1,6 @@
 """Virtual machine instructions."""
 
-import re
+from re import sub
 from treepace.relations import Child, NextSibling, Parent
 import treepace.trees
 from treepace.utils import EqualityMixin, ReprMixin
@@ -10,8 +10,7 @@ class Instruction(EqualityMixin, ReprMixin):
     
     def _compile_code(self, expression, instr_vars):
         """Compile and save the given Python code."""
-        expression = re.sub(r'\$(\d+)', r'group(\1).root.value', expression)
-        self.expression = expression.replace('$', 'node.value')
+        self.expression = sub(r'\$(\d+)', r'group(\1).root.value', expression)
         self.code = compile(self.expression, '<string>', 'eval')
         self.instr_vars = instr_vars
     
