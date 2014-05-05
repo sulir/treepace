@@ -6,7 +6,7 @@ bundles it)."""
 from setuptools import setup
 
 setup(name='Treepace',
-      version='1.0.alpha',
+      version='0.1',
       description='Tree Transformation Language',
       author='Matúš Sulír',
       url='https://github.com/sulir/treepace',
