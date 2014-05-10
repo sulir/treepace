@@ -12,7 +12,10 @@ setup(name='Treepace',
       url='https://github.com/sulir/treepace',
       packages=['treepace', 'treepace.examples'],
       test_suite='tests',
-      install_requires='parsimonious==0.5',
+      install_requires=['parsimonious==0.5'],
+      extras_require={
+          'ipython': ['ipython>=1.0.0']
+      },
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
@@ -23,5 +26,5 @@ setup(name='Treepace',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
           'Topic :: Software Development :: Libraries',
-          ]
+      ]
      )

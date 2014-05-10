@@ -5,9 +5,11 @@ In contrast to resource-mapping, importing/exporting loads and saves trees to
 their external representation on demand, not after every change.
 """
 
+import json
 import math
 import re
 import textwrap
+import treepace.trees
 from xml.dom import minidom
 from xml.etree import ElementTree
 
@@ -136,6 +138,27 @@ class XmlText:
         save(tree, doc)
         xml_str = ElementTree.tostring(doc, encoding='unicode')
         return minidom.parseString(xml_str).documentElement.toprettyxml('    ')
+
+
+class DotText:
+    """A string in DOT graph description language, used by Graphviz."""
+    
+    TEMPLATE = '''digraph G {
+    graph [ranksep=0.2];
+    node [shape=box, width=0, height=0, margin=0.04, color="#CFCFCF", 
+          style=filled, fillcolor="#F7F7F7", fontsize=10, fontcolor="#333333"];
+    edge [penwidth=1, arrowhead=none, color="#CFCFCF"];%s}'''
+    
+    def save_tree(self, tree):
+        result= "\n"
+        nodes = {}
+        for index, node in enumerate(treepace.trees.Tree(tree).preorder()):
+            nodes[node] = index
+            result += "    n%d [label=%s];\n" % (index, json.dumps(str(node)))
+        for node, index in nodes.items():
+            if node.parent:
+                result += "    n%d -> n%d;\n" % (nodes[node.parent], index)
+        return self.TEMPLATE % result
 
 
 class InvalidFormatError(Exception):

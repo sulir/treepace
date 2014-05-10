@@ -3,11 +3,12 @@
 from treepace.base import TreeBase
 from treepace.build import BuildMachine
 from treepace.compiler import Compiler
-from treepace.formats import ParenText
+from treepace.formats import ParenText, DotText
 from treepace.nodes import Node
 from treepace.relations import Identic
 from treepace.replace import ReplaceError, ReplaceStrategy
 from treepace.search import Match, SearchMachine
+from treepace.utils import GraphvizImage
 
 class Tree(TreeBase):
     """A general tree which can contain any types of nodes."""
@@ -118,6 +119,9 @@ class Tree(TreeBase):
         other_subtrees = [Tree(c) for c in other.root.children]
         return (self.root.value == other.root.value
                 and self_subtrees == other_subtrees)
+    
+    def _repr_png_(self):
+        return GraphvizImage(self.save(DotText)).render()
 
 
 class Subtree(TreeBase):

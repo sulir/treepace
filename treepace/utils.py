@@ -1,4 +1,5 @@
 """Utility functions and mix-in classes."""
+from urllib.parse import quote_plus
 
 class EqualityMixin:
     """Equality and inequality operator overloading based on attributes."""
@@ -27,3 +28,15 @@ class ReprMixin:
         representation by adding a class name and a unique identifier."""
         identifier = hex(id(self))[2:]
         return "<%s '%s' @%s>" % (self.__class__.__name__, self, identifier)
+
+
+class GraphvizImage:
+    def __init__(self, dot_source):
+        self.dot_source = dot_source
+    
+    def render(self):
+        from IPython.core.display import Image
+        url = 'https://chart.googleapis.com/chart?cht=gv&chl='
+        url += quote_plus(self.dot_source) + '&extension=.png'
+        return Image(url)._repr_png_()
+        
