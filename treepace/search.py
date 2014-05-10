@@ -1,4 +1,5 @@
-"""A tree-searching virtual machine and searching branch implementation."""
+"""A tree-searching virtual machine, searching branch and match
+implementation."""
 
 from treepace.relations import Descendant
 import treepace.trees
@@ -96,3 +97,15 @@ class Match(ReprMixin):
     def __str__(self):
         """Return a string containing all groups (subtrees)."""
         return str(list(map(str, self._subtrees)))
+    
+    def _repr_html_(self):
+        html = '<table><tr>'
+        for number in range(len(self.groups())):
+            html += '<td style="text-align: center; font-size: 80%;">'
+            html += 'group %d</td>' % number
+        html += '</tr><tr>'
+        for group in self.groups():
+            html += '<td style="text-align: center;">'
+            html += '<span style="display: inline-block;">'
+            html += group.to_tree()._repr_html_() + '</span></td>'
+        return html + '</tr></table>'

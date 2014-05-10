@@ -31,12 +31,19 @@ class ReprMixin:
 
 
 class GraphvizImage:
-    def __init__(self, dot_source):
-        self.dot_source = dot_source
+    """A graphical representation of a tree."""
     
-    def render(self):
+    def __init__(self, dot_source):
+        """Initialize the image object with a source string in DOT language."""
+        self.url = 'https://chart.googleapis.com/chart?cht=gv&chl='
+        self.url += quote_plus(dot_source) + '&extension=.png'
+    
+    def png(self):
+        """Generate a PNG image to be used with IPython."""
         from IPython.core.display import Image
-        url = 'https://chart.googleapis.com/chart?cht=gv&chl='
-        url += quote_plus(self.dot_source) + '&extension=.png'
-        return Image(url)._repr_png_()
-        
+        return Image(data=self.url)._repr_png_()
+    
+    def html(self):
+        """Generate an HTML code to be used with IPython Notebook."""
+        from IPython.core.display import Image
+        return Image(url=self.url)._repr_html_()

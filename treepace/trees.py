@@ -24,14 +24,13 @@ class Tree(TreeBase):
         self._root = _root
     
     @classmethod
-    def load(cls, string, fmt=ParenText, node_class=Node):
+    def load(cls, string, fmt=ParenText, node_class=Node, *args, **kwargs):
         """Create a new tree by importing it from a string in a given format."""
-        input_format = fmt() if callable(fmt) else fmt
-        return cls(input_format.load_tree(string, node_class))
+        return cls(fmt().load_tree(string, node_class, *args, **kwargs))
     
-    def save(self, fmt):
+    def save(self, fmt, *args, **kwargs):
         """Export the tree to a string in a given format."""
-        return (fmt() if callable(fmt) else fmt).save_tree(self.root)
+        return fmt().save_tree(self.root, *args, **kwargs)
     
     def search(self, pattern, **variables):
         """Search for a given pattern anywhere in the tree and return a list
@@ -121,7 +120,10 @@ class Tree(TreeBase):
                 and self_subtrees == other_subtrees)
     
     def _repr_png_(self):
-        return GraphvizImage(self.save(DotText)).render()
+        return GraphvizImage(self.save(DotText)).png()
+    
+    def _repr_html_(self):
+        return GraphvizImage(self.save(DotText)).html()
 
 
 class Subtree(TreeBase):
@@ -170,12 +172,22 @@ class Subtree(TreeBase):
         return [leaf for leaf in self.leaves if leaf.children]
     
     def to_tree(self):
-        """Shallow-copy node values into a new tree (with new nodes)."""
+        """Shallow-copy subtree node values into a new tree (with new nodes)."""
         def make_tree(node):
             children = (make_tree(child) for child in self._node_children(node))
             return node.__class__(node.value, children)
         
         return Tree(make_tree(self._root)) if self._root else None
+    
+    def main_tree(self):
+        """Return the main tree associated with this subtree.
+        
+        A new tree is created, but the nodes are not copied.
+        """
+        root = self._root
+        while root.parent:
+            root = root.parent
+        return Tree(root)
     
     def replace_by(self, tree):
         """Try available replacement strategies and raise an exception if
@@ -200,6 +212,9 @@ class Subtree(TreeBase):
     def __str__(self):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
+    
+    def _repr_png_(self):
+        return GraphvizImage(self.main_tree().save(DotText, self._nodes)).png()
 
 
 class SubtreeError(Exception):

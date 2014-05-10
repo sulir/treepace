@@ -16,13 +16,11 @@ from xml.etree import ElementTree
 class IndentedText:
     """A text where the indentation level determines the node level."""
     
-    def __init__(self, indent='    '):
-        """The indentation string is used only for exporting; it is
-        automatically recognized during the import."""
-        self.indent = indent
-    
     def load_tree(self, string, node_class):
-        """Create a tree from the tab- or space-indented string."""
+        """Create a tree from the tab- or space-indented string.
+        
+        The indentation type is automatically recognized.
+        """
         indent_len = None
         stack = []
         
@@ -43,10 +41,10 @@ class IndentedText:
                 stack[-2].add_child(stack[-1])
         return stack[0]
     
-    def save_tree(self, tree):
+    def save_tree(self, tree, indent='    '):
         """Create a space- or tab-indented string from the tree."""
         def indented(node, level):
-            result = level * self.indent + str(node) + '\n'
+            result = level * indent + str(node) + '\n'
             for child in node.children:
                 result += indented(child, level + 1)
             return result
@@ -145,19 +143,31 @@ class DotText:
     
     TEMPLATE = '''digraph G {
     graph [ranksep=0.2];
-    node [shape=box, width=0, height=0, margin=0.04, color="#CFCFCF", 
-          style=filled, fillcolor="#F7F7F7", fontsize=10, fontcolor="#333333"];
-    edge [penwidth=1, arrowhead=none, color="#CFCFCF"];%s}'''
+    node [shape=box, width=0.05, height=0.05, margin=0.04, color="#C7C7C7", 
+          style=filled, fillcolor="#F3F3F3", fontsize=10, fontcolor="#333333"];
+    edge [penwidth=1, arrowhead=none, color="#C7C7C7"];%s}'''
+    NODE_TPL = '    n%d [label=%s%s];\n'
+    EDGE_TPL = '    n%d -> n%d%s;\n'
     
-    def save_tree(self, tree):
+    def save_tree(self, tree, highlight=set()):
+        """Generate the DOT language source text containing nodes and edges."""
         result= "\n"
         nodes = {}
+        
         for index, node in enumerate(treepace.trees.Tree(tree).preorder()):
             nodes[node] = index
-            result += "    n%d [label=%s];\n" % (index, json.dumps(str(node)))
+            color = ''
+            if node in highlight:
+                color = ', color="#3567A7", fillcolor="#B9D8FF"'
+            result += self.NODE_TPL % (index, json.dumps(str(node)), color)
+        
         for node, index in nodes.items():
             if node.parent:
-                result += "    n%d -> n%d;\n" % (nodes[node.parent], index)
+                color = ''
+                if node.parent in highlight and node in highlight:
+                    color = ' [color="#3567A7"]'
+                result += self.EDGE_TPL % (nodes[node.parent], index, color)
+        
         return self.TEMPLATE % result
 
 
