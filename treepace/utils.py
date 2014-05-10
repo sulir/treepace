@@ -35,13 +35,13 @@ class GraphvizImage:
     
     def __init__(self, dot_source):
         """Initialize the image object with a source string in DOT language."""
-        self.url = 'https://chart.googleapis.com/chart?cht=gv&chl='
-        self.url += quote_plus(dot_source) + '&extension=.png'
+        self.url = 'http://chart.googleapis.com/chart?cht=gv&chl='
+        self.url += quote_plus(dot_source) + '&ext=.png'
     
     def png(self):
         """Generate a PNG image to be used with IPython."""
         from IPython.core.display import Image
-        return Image(data=self.url)._repr_png_()
+        return Image(url=self.url)._repr_png_()
     
     def html(self):
         """Generate an HTML code to be used with IPython Notebook."""

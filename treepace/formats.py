@@ -141,31 +141,31 @@ class XmlText:
 class DotText:
     """A string in DOT graph description language, used by Graphviz."""
     
-    TEMPLATE = '''digraph G {
+    TEMPLATE = re.sub(r'\s+', '', '''digraph {
     graph [ranksep=0.2];
     node [shape=box, width=0.05, height=0.05, margin=0.04, color="#C7C7C7", 
           style=filled, fillcolor="#F3F3F3", fontsize=10, fontcolor="#333333"];
-    edge [penwidth=1, arrowhead=none, color="#C7C7C7"];%s}'''
-    NODE_TPL = '    n%d [label=%s%s];\n'
-    EDGE_TPL = '    n%d -> n%d%s;\n'
+    edge [penwidth=1, arrowhead=none, color="#C7C7C7"];%s}''')
+    NODE_TPL = 'n%d[label=%s%s];'
+    EDGE_TPL = 'n%d->n%d%s;'
     
     def save_tree(self, tree, highlight=set()):
         """Generate the DOT language source text containing nodes and edges."""
-        result= "\n"
+        result= ""
         nodes = {}
         
         for index, node in enumerate(treepace.trees.Tree(tree).preorder()):
             nodes[node] = index
             color = ''
             if node in highlight:
-                color = ', color="#3567A7", fillcolor="#B9D8FF"'
+                color = ',color="#3567A7",fillcolor="#B9D8FF"'
             result += self.NODE_TPL % (index, json.dumps(str(node)), color)
         
         for node, index in nodes.items():
             if node.parent:
                 color = ''
                 if node.parent in highlight and node in highlight:
-                    color = ' [color="#3567A7"]'
+                    color = '[color="#3567A7"]'
                 result += self.EDGE_TPL % (nodes[node.parent], index, color)
         
         return self.TEMPLATE % result
