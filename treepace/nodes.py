@@ -2,9 +2,9 @@
 behavior."""
 
 import sys
-from treepace.utils import ReprMixin
+from treepace.utils import IPythonDotMixin, ReprMixin
 
-class Node(ReprMixin):
+class Node(ReprMixin, IPythonDotMixin):
     """An in-memory node node with references to children and a parent.
     
     The constructor, the 'value' property setter and the methods 'insert_child'
@@ -91,6 +91,10 @@ class Node(ReprMixin):
     def __str__(self):
         """Return a string representation of the node's value."""
         return str(self.value)
+    
+    def _repr_dot_(self):
+        from treepace.formats import DotText
+        return DotText().save_tree(Node(self.value))
 
 
 class LogNode(Node):

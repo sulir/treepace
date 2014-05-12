@@ -3,7 +3,7 @@ implementation."""
 
 from treepace.relations import Descendant
 import treepace.trees
-from treepace.utils import ReprMixin
+from treepace.utils import ReprMixin, IPythonDotMixin
 from treepace.replace import ReplaceError
 
 class SearchMachine(ReprMixin):
@@ -66,7 +66,7 @@ class SearchBranch(ReprMixin):
             self.node, self.relation.name, list(map(str, self.instructions)))
 
 
-class Match(ReprMixin):
+class Match(ReprMixin, IPythonDotMixin):
     """A match is a list of groups; each group is one subtree."""
     
     def __init__(self, groups):
@@ -98,14 +98,6 @@ class Match(ReprMixin):
         """Return a string containing all groups (subtrees)."""
         return str(list(map(str, self._subtrees)))
     
-    def _repr_html_(self):
-        html = '<table><tr>'
-        for number in range(len(self.groups())):
-            html += '<td style="text-align: center; font-size: 80%;">'
-            html += 'group %d</td>' % number
-        html += '</tr><tr>'
-        for group in self.groups():
-            html += '<td style="text-align: center;">'
-            html += '<span style="display: inline-block;">'
-            html += group.to_tree()._repr_html_() + '</span></td>'
-        return html + '</tr></table>'
+    def _repr_dot_(self):
+        from treepace.formats import DotText
+        return self.group().main_tree().save(DotText, match=self)

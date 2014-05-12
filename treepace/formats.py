@@ -142,32 +142,50 @@ class DotText:
     """A string in DOT graph description language, used by Graphviz."""
     
     TEMPLATE = re.sub(r'\s+', '', '''digraph {
-    graph [ranksep=0.2];
+    ranksep=0.2;
     node [shape=box, width=0.05, height=0.05, margin=0.04, color="#C7C7C7", 
           style=filled, fillcolor="#F3F3F3", fontsize=10, fontcolor="#333333"];
-    edge [penwidth=1, arrowhead=none, color="#C7C7C7"];%s}''')
+    edge [penwidth=1, arrowhead=none, color="#C7C7C8"];%s}''')
     NODE_TPL = 'n%d[label=%s%s];'
     EDGE_TPL = 'n%d->n%d%s;'
+    CLUSTER_TPL = 'subgraph cluster_%d{label=%d;fontsize=9;style=dashed;'
     
-    def save_tree(self, tree, highlight=set()):
+    def save_tree(self, tree, subtree=None, match=None, groups=[]):
         """Generate the DOT language source text containing nodes and edges."""
-        result= ""
+        result= ''
         nodes = {}
         
         for index, node in enumerate(treepace.trees.Tree(tree).preorder()):
             nodes[node] = index
             color = ''
-            if node in highlight:
+            if subtree and node in subtree.nodes:
                 color = ',color="#3567A7",fillcolor="#B9D8FF"'
+            elif match and node in match.group().nodes:
+                color = ',color="#5D8C55",fillcolor="#A7FF99"'
             result += self.NODE_TPL % (index, json.dumps(str(node)), color)
         
         for node, index in nodes.items():
             if node.parent:
                 color = ''
-                if node.parent in highlight and node in highlight:
+                if subtree and {node.parent, node} <= subtree.nodes:
                     color = '[color="#3567A7"]'
+                elif match and {node.parent, node} <= match.group().nodes:
+                    color = '[color="#5D8C55"]'
                 result += self.EDGE_TPL % (nodes[node.parent], index, color)
         
+        def cluster(groups, idx):
+            code = self.CLUSTER_TPL % (idx, idx)
+            code += ''.join('n%d;' % nodes[node] for node in groups[idx].nodes)
+            if len(groups) > idx + 1:
+                if groups[idx].nodes & groups[idx + 1].nodes:
+                    return code + cluster(groups, idx + 1) + '}'
+                else:
+                    return code + '}' + cluster(groups, idx + 1)
+            else:
+                return code + '}'
+        
+        if match and len(match.groups()) > 1:
+            result += cluster(match.groups(), 1)
         return self.TEMPLATE % result
 
 

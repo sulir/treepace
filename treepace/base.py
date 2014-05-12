@@ -1,9 +1,9 @@
 """Basic tree interface and behavior."""
 
 from itertools import chain
-from treepace.utils import EqualityMixin, ReprMixin
+from treepace.utils import EqualityMixin, IPythonDotMixin, ReprMixin
 
-class TreeBase(EqualityMixin, ReprMixin):
+class TreeBase(EqualityMixin, ReprMixin, IPythonDotMixin):
     """An abstract class containing the interface and implementation common
     for both a tree and a subtree."""
     

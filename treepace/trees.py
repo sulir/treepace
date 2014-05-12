@@ -8,7 +8,6 @@ from treepace.nodes import Node
 from treepace.relations import Identic
 from treepace.replace import ReplaceError, ReplaceStrategy
 from treepace.search import Match, SearchMachine
-from treepace.utils import GraphvizImage
 
 class Tree(TreeBase):
     """A general tree which can contain any types of nodes."""
@@ -119,11 +118,8 @@ class Tree(TreeBase):
         return (self.root.value == other.root.value
                 and self_subtrees == other_subtrees)
     
-    def _repr_png_(self):
-        return GraphvizImage(self.save(DotText)).png()
-    
-    def _repr_html_(self):
-        return GraphvizImage(self.save(DotText)).html()
+    def _repr_dot_(self):
+        return self.save(DotText)
 
 
 class Subtree(TreeBase):
@@ -213,8 +209,8 @@ class Subtree(TreeBase):
         """Return a text representation of the subtree (as if it was a tree)."""
         return str(self.to_tree())
     
-    def _repr_png_(self):
-        return GraphvizImage(self.main_tree().save(DotText, self._nodes)).png()
+    def _repr_dot_(self):
+        return self.main_tree().save(DotText, subtree=self)
 
 
 class SubtreeError(Exception):
