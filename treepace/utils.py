@@ -32,7 +32,7 @@ class ReprMixin:
 
 
 class IPythonDotMixin:
-    """A graphical and HTML representation for IPython (Notebook).
+    """A graphical and HTML representation for IPython Notebook.
     
     Derived classes should implement _repr_dot_() method returning a source
     code in DOT graph specification language.
@@ -40,14 +40,14 @@ class IPythonDotMixin:
     
     def _repr_png_(self):
         from IPython.core.display import Image
-        return Image(data=self._url())._repr_png_()
+        return Image(url=self._url())._repr_png_()
     
     def _repr_html_(self):
         from IPython.core.display import Image
         return Image(url=self._url())._repr_html_()
     
     def _url(self):
-        url = 'http://chart.googleapis.com/chart?cht=gv&chl='
+        url = 'https://chart.googleapis.com/chart?cht=gv&chl='
         return url + quote_plus(self._repr_dot_()) + '&ext=.png'
 
 
