@@ -67,6 +67,10 @@ class Node(ReprMixin, IPythonDotMixin):
         """Return this node's vertical level; the root node has a level of 0."""
         return len(self.path()) - 1
     
+    @property
+    def is_leaf(self):
+        return not self._children
+    
     def path(self):
         """Return a list of nodes from the root to this node."""
         result = []
