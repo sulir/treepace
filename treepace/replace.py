@@ -27,7 +27,8 @@ class SameShape(ReplaceStrategy):
     
     def test(self):
         """Traverse and compare the trees, ignoring the values."""
-        generate = {k:(lambda *_: [k]) for k in ('node', 'down', 'right', 'up')}
+        generate = {'node': lambda node: ['n'], 'down': lambda: ['d'],
+            'right': lambda: ['r'], 'up': lambda: ['u']}
         subtree = self._old.to_tree().traverse(**generate)
         replacement = self._new.traverse(**generate)
         return all(x == y for x, y in zip_longest(subtree, replacement))
