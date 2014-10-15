@@ -6,15 +6,15 @@ bundles it)."""
 from setuptools import setup
 
 setup(name='Treepace',
-      version='0.2',
+      version='0.3',
       description='Tree Transformation Language',
       author='Matúš Sulír',
       url='https://github.com/sulir/treepace',
       packages=['treepace', 'treepace.examples'],
       test_suite='tests',
-      install_requires=['parsimonious==0.5'],
+      install_requires=['parsimonious>=0.5'],
       extras_require={
-          'ipython': ['ipython>=1.0.0']
+          'ipython': ['ipython>=2.0.0']
       },
       classifiers=[
           'Development Status :: 3 - Alpha',
